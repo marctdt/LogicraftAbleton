@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Commons.Music.Midi;
@@ -71,6 +70,7 @@ namespace LogicraftAbleton
 			catch (Exception ex)
 			{
 				string err = ex.Message;
+				WritelineInLogTextbox(ex.StackTrace);
 				MessageBox.Show(err);
 			}
 		}
@@ -200,8 +200,8 @@ namespace LogicraftAbleton
 					}
 					catch (Exception ex)
 					{
-						string str = ex.Message;
-
+						var str = ex.Message;
+						WritelineInLogTextbox(ex.StackTrace);
 						MessageBox.Show(str);
 					}
 
@@ -433,7 +433,7 @@ namespace LogicraftAbleton
 			catch (Exception ex)
 			{
 				string str = ex.Message;
-				WritelineInLogTextbox(str);
+				WritelineInLogTextbox(ex.StackTrace);
 				MessageBox.Show("Ableton is not started yet");
 			}
 		}
@@ -457,6 +457,7 @@ namespace LogicraftAbleton
 			catch (Exception ex)
 			{
 				string str = ex.Message;
+				WritelineInLogTextbox(ex.StackTrace);
 				MessageBox.Show(str);
 			}
 
