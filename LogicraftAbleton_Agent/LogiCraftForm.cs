@@ -31,14 +31,24 @@ namespace LogicraftAbleton
 		private WebSocket _client;
 		private IMidiOutput _bmt1Output;
 		private string _host = "ws://localhost:10134";
-		private int _countTapForDoubleTap=0;
+		private int _countTapForDoubleTap = 0;
 		private bool _isLogEnabled = Convert.ToBoolean(ConfigurationManager.AppSettings["DefaultEnableLogging"]);
 		private bool _isHoldModeEnabled = Convert.ToBoolean(ConfigurationManager.AppSettings["DefaultEnableHoldMode"]);
 		private int _holdModeTimerDuration = Convert.ToInt32(ConfigurationManager.AppSettings["DefaultHoldModeTimerDuration"]);
 		private double _wheelSimFactor = Convert.ToDouble(ConfigurationManager.AppSettings["DefaultWheelSimFactor"]);
-		private  double _factorBrowseNoRatchet = Convert.ToDouble(ConfigurationManager.AppSettings["DefaultFactorBrowseNoRatchet"]);
+		private double _factorBrowseNoRatchet = Convert.ToDouble(ConfigurationManager.AppSettings["DefaultFactorBrowseNoRatchet"]);
 		private double _doubleTapTimerDuration = Convert.ToDouble(ConfigurationManager.AppSettings["DefaultDoubleTapTimerDuration"]);
+
+		private Timer _turnSpeedTimer;
+		private int _turnSpeedThresholdNoRatchet = Convert.ToInt32(ConfigurationManager.AppSettings["DefaultTurnSpeedTimerDurationNoRatchet"]);
+		private int _turnSpeedThresholdRatchet = Convert.ToInt32(ConfigurationManager.AppSettings["DefaultTurnSpeedTimerDurationRatchet"]);
+
+		private int _turnSpeedRatchet = 0;
+		private int _turnSpeedNoRatchet = 0;
 		//private List<CrownRootObject> _crownObjectList = new List<CrownRootObject>();
+
+		public event EventHandler OnFastSpeedThresholdReached;
+		public event EventHandler OnSlowSpeedThresholdReached;
 
 
 		public void ToolChange(string contextName)
@@ -129,6 +139,7 @@ namespace LogicraftAbleton
 								if (_currentTool != "NumericUpDown")
 									if (!_isHoldModeEnabled)
 										ToolChange("TabControl");
+								RestoreDetectTurnSpeed();
 							}
 
 						}
@@ -144,16 +155,11 @@ namespace LogicraftAbleton
 									//WritelineInLogTextbox($"Send to ableton: {command}");
 									WritelineInLogTextbox($"send midi to BMT 1 with Ratchet");
 									_bmt1Output.Send(new byte[] { MidiEvent.CC, 0x00, CalcMidiOffsetFromCenter(crownRootObject.ratchet_delta) }, 0, 2, 0);
-									//for (var i = 0; i < Math.Abs(crownRootObject.ratchet_delta); i++)
-									//{
-									//_abletonClient.SendAsync(command, null);
-									//_abletonserver.listclients().tolist().foreach(async x=>
-									//{
-									//	writelineinlogtextbox($"send command to {x}");
-									//////var result = await _abletonserver.sendasync(x, command);
-									//});
-									//_abletonServer.SendAsync("9000", command);
-									//}
+									if (!IsDetectTimerEnabled)
+										InitDetectTurnSpeed();
+									_turnSpeedRatchet += crownRootObject.ratchet_delta;
+									_turnSpeedNoRatchet += crownRootObject.delta;
+
 
 									break;
 
@@ -164,6 +170,11 @@ namespace LogicraftAbleton
 										? Convert.ToInt32(Math.Ceiling(crownRootObject.delta / _factorBrowseNoRatchet))
 										: -Convert.ToInt32(Math.Ceiling(Math.Abs(crownRootObject.delta) / _factorBrowseNoRatchet));
 									_bmt1Output.Send(new byte[] { MidiEvent.CC, 0x00, CalcMidiOffsetFromCenter(deltaRounded) }, 0, 2, 0);
+
+									if (!IsDetectTimerEnabled)
+										InitDetectTurnSpeed();
+									_turnSpeedRatchet += crownRootObject.ratchet_delta;
+									_turnSpeedNoRatchet += crownRootObject.delta;
 
 									break;
 								case "NumericUpDown":
@@ -200,6 +211,8 @@ namespace LogicraftAbleton
 
 		private Timer _timer;
 		private Timer _timerDoubleTap;
+		private int _turnSpeedInterval = Convert.ToInt32(ConfigurationManager.AppSettings["DefaultTurnSpeedInterval"]);
+		private int _slowSpeedThresholdNoRatchet = Convert.ToInt32(ConfigurationManager.AppSettings["DefaultSlowSpeedThresholdNoRatchet"]);
 
 		public event EventHandler OnDoubleTap;
 
@@ -437,6 +450,8 @@ namespace LogicraftAbleton
 				await ConnectToAbletonAsync();
 
 				OnDoubleTap += (sender, args) => ToolChange(_currentTool == "NumericUpDown" ? "TabControl" : "NumericUpDown");
+				OnFastSpeedThresholdReached += (sender, args) => ToolChange(("ProgressBar"));
+				OnSlowSpeedThresholdReached += (sender, args) => ToolChange(("TabControl"));
 				InitFields();
 			}
 			catch (Exception ex)
@@ -457,10 +472,9 @@ namespace LogicraftAbleton
 
 		public LogicraftForm()
 		{
-			InitializeComponent(); 
+			InitializeComponent();
 			WindowState = FormWindowState.Minimized;
 
-			// start the connnection process 
 			Init();
 
 		}
@@ -508,6 +522,32 @@ namespace LogicraftAbleton
 
 		private void TextboxTimerDuration_TextChanged(object sender, EventArgs e) => _holdModeTimerDuration = Convert.ToInt32(TextboxTimerDuration.Text);
 
+		private bool IsDetectTimerEnabled => _turnSpeedTimer != null && _turnSpeedTimer.Enabled;
+
+		private void InitDetectTurnSpeed()
+		{
+			_turnSpeedTimer = new Timer(_turnSpeedInterval);
+			_turnSpeedTimer.Elapsed += (sender, args) =>
+			{
+				if (_turnSpeedRatchet > _turnSpeedThresholdRatchet)
+					OnOnFastSpeedThresholdReached();
+				else if (_turnSpeedNoRatchet < _slowSpeedThresholdNoRatchet)
+					OnOnSlowSpeedThresholdReached();
+				RestoreDetectTurnSpeed();
+			};
+			_turnSpeedTimer.Start();
+		}
+
+		private void RestoreDetectTurnSpeed()
+		{
+			_turnSpeedRatchet = 0;
+			_turnSpeedNoRatchet = 0;
+			_turnSpeedTimer.Stop();
+			_turnSpeedTimer.Close();
+			_turnSpeedTimer.Dispose();
+
+		}
+
 		private void InitDetectDoubleTap()
 		{
 			_timerDoubleTap = new Timer(_doubleTapTimerDuration) { Enabled = true };
@@ -541,6 +581,18 @@ namespace LogicraftAbleton
 			{
 				// ignored
 			}
+		}
+
+		protected virtual void OnOnFastSpeedThresholdReached()
+		{
+			WritelineInLogTextbox("Fast Threshold Reached");
+			OnFastSpeedThresholdReached?.Invoke(this, EventArgs.Empty);
+		}
+
+		protected virtual void OnOnSlowSpeedThresholdReached()
+		{
+			WritelineInLogTextbox("Slow Threshold Reached");
+			OnSlowSpeedThresholdReached?.Invoke(this, EventArgs.Empty);
 		}
 	}
 
