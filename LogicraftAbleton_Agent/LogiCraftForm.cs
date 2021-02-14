@@ -530,9 +530,9 @@ namespace LogicraftAbleton
 			_turnSpeedTimer = new Timer(_turnSpeedInterval);
 			_turnSpeedTimer.Elapsed += (sender, args) =>
 			{
-				if (_turnSpeedRatchet > _turnSpeedThresholdRatchet)
+				if (Math.Abs(_turnSpeedRatchet) > _turnSpeedThresholdRatchet)
 					OnOnFastSpeedThresholdReached();
-				else if (_turnSpeedNoRatchet < _slowSpeedThresholdNoRatchet)
+				else if (Math.Abs(_turnSpeedNoRatchet) < _slowSpeedThresholdNoRatchet)
 					OnOnSlowSpeedThresholdReached();
 				RestoreDetectTurnSpeed();
 			};
