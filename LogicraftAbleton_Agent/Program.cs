@@ -10,8 +10,7 @@ namespace LogicraftAbleton
 		[STAThread]
 		public static void Main()
 		{
-			bool createdNew;
-			_mutex = new Mutex(true, "LogicraftAbleton", out createdNew);
+			_mutex = new Mutex(true, "LogicraftAbleton", out var createdNew);
 
 			if (!createdNew)
 			{
