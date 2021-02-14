@@ -60,6 +60,9 @@
   <PropertyGroup>
     <SignManifests>true</SignManifests>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Ableton Craft Agent.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="alsa-sharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\managed-midi.1.9.14\lib\net45\alsa-sharp.dll</HintPath>
@@ -131,6 +134,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Ableton Craft Agent.ico" />
     <Content Include="Logishrd\41704de9-fa75-4b77-ba44-665bc9a2f8aa\Gallery\Ableton Craft Agent.ico" />
     <Content Include="Logishrd\41704de9-fa75-4b77-ba44-665bc9a2f8aa\Gallery\circular%402x.png" />
     <Content Include="Logishrd\41704de9-fa75-4b77-ba44-665bc9a2f8aa\Gallery\circular.png" />
