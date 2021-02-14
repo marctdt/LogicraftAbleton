@@ -1,6 +1,6 @@
 ﻿namespace LogicraftAbleton
 {
-	partial class LogiCraftForm
+	partial class LogicraftForm
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -28,7 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LogiCraftForm));
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LogicraftForm));
 			this.logBox = new System.Windows.Forms.RichTextBox();
 			this.CheckboxLogging = new System.Windows.Forms.CheckBox();
 			this.ButtonReconnect = new System.Windows.Forms.Button();
@@ -130,7 +130,7 @@
 			this.Controls.Add(this.logBox);
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.Margin = new System.Windows.Forms.Padding(2);
-			this.Name = "LogiCraftForm";
+			this.Name = "LogicraftForm";
 			this.Text = "Logicraft for Ableton";
 			this.ResumeLayout(false);
 			this.PerformLayout();

@@ -17,7 +17,7 @@ using Timer = System.Timers.Timer;
 
 namespace LogicraftAbleton
 {
-	public partial class LogiCraftForm : Form
+	public partial class LogicraftForm : Form
 	{
 		private const int Mhousewheelunit = 120;
 		private string _sessionId = "";
@@ -455,9 +455,10 @@ namespace LogicraftAbleton
 			TextboxWheelFactor.Text = _wheelSimFactor.ToString(CultureInfo.InvariantCulture);
 		}
 
-		public LogiCraftForm()
+		public LogicraftForm()
 		{
-			InitializeComponent();
+			InitializeComponent(); 
+			WindowState = FormWindowState.Minimized;
 
 			// start the connnection process 
 			Init();

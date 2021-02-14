@@ -19,7 +19,7 @@ namespace LogicraftAbleton
 			}
 
 			Application.EnableVisualStyles();
-			Application.Run(new LogiCraftForm());
+			Application.Run(new LogicraftForm());
 		}
 	}
 }
