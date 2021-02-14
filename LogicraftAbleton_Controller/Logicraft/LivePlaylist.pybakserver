@@ -1,0 +1,118 @@
+
+
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), "lib"))
+
+
+import json
+
+import Live
+import threading
+
+from _Framework.ControlSurface import ControlSurface
+
+from .Logger import Log
+
+from SimpleWebSocketServer import WebSocket, SimpleWebSocketServer
+
+
+# Annoying: json.dumps may return either str or unicode depending on input
+# (e.g. for empty list, it returns str) and SimpleWebSocketServer expects unicode
+# when sending string responses. Therefore wrapping everything in a non-empty
+# unicode response here.
+def to_json(data):
+    wrapped = { 'response': data }
+    return json.dumps(wrapped, encoding='utf-8', ensure_ascii=False)
+
+queue = []
+
+class SimpleEcho(WebSocket):
+    def handleMessage(self):
+        #queue.append((self, self.data))
+
+        
+        #item = (self, self.data)
+
+        #socket = item[0]
+
+        #message = json.loads(self.data)
+        
+        #command = message['command']
+	
+
+        #Log.log("Execute %s" % self.data)
+        #Log.log("Debug %s" % socket)
+
+        self.sendMessage("scroll done")
+        #command = ""     
+        #if command == "scroll":
+#            direction = message['direction']
+#            Live.Application.get_application().view.scroll_view(int(direction),'Browser',False)            
+
+            #attrs = vars(Live.Application.get_application())
+            #result = "{'result':'" + ''.join("%s: %s /------/ " % item for item in list(attrs.items())) + "'}" 
+
+            #self.sendMessage("scroll done")
+                             
+     #   else:
+      #      Log.log("Unknown command!")
+
+
+
+    def handleConnected(self):
+        Log.log("%s Connected" % str(self.address))
+        self.sendMessage("%s Connected" % str(self.address))
+
+    def handleClose(self):
+        Log.log("%s Closed" % str(self.address))
+        self.sendMessage("%s Closed" % str(self.address))
+
+server = SimpleWebSocketServer("localhost", 9009, SimpleEcho)
+wst = threading.Thread(target=server.serveforever)
+wst.daemon = True
+wst.start()
+#server.serveforever()
+
+class LivePlaylist(ControlSurface):
+    def __init__(self, c_instance):
+        ControlSurface.__init__(self, c_instance)
+        with self.component_guard():
+            self.__c_instance = c_instance
+            Log.set_logger(self.log_message)
+            Log.log('LivePlaylist starting up')
+            
+            #self.get_song().add_current_song_time_listener(self._time_changed)
+            #start_server = websockets.serve(handleMessage,"localhost",9009)
+            #asyncio.get_event_loop().run_until_complete(start_server)
+            #asyncio.get_event_loop().run_forever()
+        
+            
+
+
+            
+   
+        
+    def _focus_changed(self):
+        global focusedView
+        focusedView = Live.Application.get_application().get_document()
+        result = "{'result':'" + str(focusedView) + "'}" 
+        Log.log(result)
+        attrs = vars(focusedView)
+        result = "{'result':'" + ''.join("%s: %s ------ " % item for item in list(attrs.items())) + "'}" 
+        lastSocket.sendMessage(to_json(result))
+
+    #def _time_changed(self):
+     #   Log.log("Playing at %s" % self.get_song().current_song_time)
+
+    def disconnect(self):
+        Log.log('LivePlaylist shutting down')
+        server.close()
+        ControlSurface.disconnect(self)
+
+
+    def get_song(self):
+        return Live.Application.get_application().get_document()
+
+    def get_liveApplication(self):
+        return Live.Application.get_application()

@@ -1,0 +1,49 @@
+{
+    "GUID": "41704de9-fa75-4b77-ba44-665bc9a2f8aa",
+    "info": {
+        "name": "Ableton 11 Beta",
+		 "publisher": "MarcTDT",
+        "version": "1.0",
+        "win_name": "Ableton Live 11 Beta.exe",
+		
+        "mac_bundle": "",
+        "mac_path": "",
+        "mac_paths": [
+            {
+                "path": "",
+                "mac_minimum_supported_version": "",
+                "mac_maximum_supported_version": "",
+                "name_suffix": ""
+            },
+            {
+                "path": "",
+                "comment": "",
+                "mac_minimum_supported_version": "",
+                "mac_maximum_supported_version": "",
+                "name_suffix": ""
+            }
+        ],
+        "win_minimum_supported_version": "0.0.0",
+        "win_maximum_supported_version": ""
+    },
+    "crown": {
+        "rotate": {
+            "default_task": "changetoolvalue",
+            "tasks": [
+                "changetoolvalue"
+            ],
+            "short_list": [
+                "changetoolvalue"
+            ]
+        },
+        "press": {
+            "default_task": "playpause",
+            "tasks": [
+                "playpause"
+            ],
+            "short_list": [
+                "playpause"
+            ]
+        }
+    }
+}

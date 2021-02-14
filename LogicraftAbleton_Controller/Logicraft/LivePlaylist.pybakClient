@@ -1,0 +1,128 @@
+
+
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), "lib"))
+
+
+import json
+
+import Live
+
+import threading
+import websocket
+import ssl
+
+from multiprocessing import Process
+from _Framework.ControlSurface import ControlSurface
+
+from .Logger import Log
+
+# Annoying: json.dumps may return either str or unicode depending on input
+# (e.g. for empty list, it returns str) and SimpleWebSocketServer expects unicode
+# when sending string responses. Therefore wrapping everything in a non-empty
+# unicode response here.
+#def to_json(data):
+#    wrapped = { 'response': data }
+#    return json.dumps(wrapped, encoding='utf-8', ensure_ascii=False)
+
+queue = []
+
+
+
+
+class WsThread(threading.Thread):
+    def __init__(self):
+        super(WsThread, self).__init__()
+        #global ws
+        # Can setup other things before the thread starts
+        self.ws = websocket.WebSocketApp("ws://localhost:9000")
+        self.ws.on_open = self.on_open
+        self.ws.on_message = self.on_message
+        self.ws.on_error = self.on_error
+        self.ws.on_close = self.on_close
+
+    def run(self):
+        self.ws.run_forever(sslopt={"cert_reqs": ssl.CERT_NONE , "check_hostname": False})
+
+
+    def on_message(self, message):
+        
+        #self.ws.send("scroll done")
+        parseMessage = json.loads(message)
+        command = parseMessage['command']
+
+
+        #Log.log("Execute %s" % self.data)
+        #Log.log("Debug %s" % socket)
+
+        
+
+        if command == "scroll":
+            direction = parseMessage['direction']
+            Live.Application.get_application().view.scroll_view(int(direction),'Browser',False)            
+
+            #attrs = vars(Live.Application.get_application())
+            #result = "{'result':'" + ''.join("%s: %s /------/ " % item for item in list(attrs.items())) + "'}" 
+
+            #self.sendMessage("scroll done")
+            #self.ws.send("scroll done")
+                             
+     #   else:
+      #      Log.log("Unknown command!")
+
+    
+    def on_open(self):
+        Log.log("on_open called...")
+        connectMessage = {"messag":"Ableton connected"}
+        regMsg =  json.dumps(connectMessage)
+        #self.ws.send("hello this is Ableton")
+
+    def on_error(self, error):
+        Log.log("error %s" % error)
+
+    def on_close(self):
+        Log.log("WS closed")
+
+
+class LivePlaylist(ControlSurface):
+    def __init__(self, c_instance):
+        ControlSurface.__init__(self, c_instance)
+        with self.component_guard():
+            self.__c_instance = c_instance
+            Log.set_logger(self.log_message)
+            Log.log('LivePlaylist starting up')
+            
+            wst = WsThread()
+            wst.start()
+
+
+
+            
+            
+
+
+
+        
+    def _focus_changed(self):
+        global focusedView
+        focusedView = Live.Application.get_application().get_document()
+        result = "{'result':'" + str(focusedView) + "'}" 
+        Log.log(result)
+        attrs = vars(focusedView)
+        result = "{'result':'" + ''.join("%s: %s ------ " % item for item in list(attrs.items())) + "'}" 
+        
+
+    #def _time_changed(self):
+     #   Log.log("Playing at %s" % self.get_song().current_song_time)
+
+    def disconnect(self):
+        Log.log('LivePlaylist shutting down')
+        ControlSurface.disconnect(self)
+
+
+    def get_song(self):
+        return Live.Application.get_application().get_document()
+
+    def get_liveApplication(self):
+        return Live.Application.get_application()
