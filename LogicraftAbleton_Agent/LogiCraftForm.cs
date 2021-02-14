@@ -123,7 +123,7 @@ namespace LogicraftAbleton
 								//_timer.Elapsed += (sender, args) => ToolChange(_currentTool == "TabControl" ? "ProgressBar" : "TabControl");
 								_timer.Elapsed += (sender, args) =>
 								{
-									if (_currentTool != CrownModEnum.NumericUpDown)
+									if (_currentTool == CrownModEnum.TabControl)
 										if (_isHoldModeEnabled)
 											ToolChange(_currentTool == CrownModEnum.TabControl ? CrownModEnum.ProgressBar : CrownModEnum.TabControl);
 										else
