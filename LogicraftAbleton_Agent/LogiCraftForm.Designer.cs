@@ -125,6 +125,7 @@
 			this.CheckboxKeyboardRatchetEnabled.TabIndex = 9;
 			this.CheckboxKeyboardRatchetEnabled.Text = "Enable Ratchet for Key In";
 			this.CheckboxKeyboardRatchetEnabled.UseVisualStyleBackColor = true;
+			this.CheckboxKeyboardRatchetEnabled.CheckedChanged += new System.EventHandler(this.CheckboxKeyboardRatchetEnabled_CheckedChanged);
 			// 
 			// LogicraftForm
 			// 

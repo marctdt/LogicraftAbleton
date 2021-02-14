@@ -158,11 +158,13 @@ namespace LogicraftAbleton
 										//WritelineInLogTextbox($"Send to ableton: {command}");
 										WritelineInLogTextbox($"send midi to BMT 1 with Ratchet");
 										_bmt1Output.Send(new byte[] { MidiEvent.CC, 0x00, CalcMidiOffsetFromCenter(crownRootObject.ratchet_delta) }, 0, 2, 0);
-										if (!IsDetectTimerEnabled)
-											InitDetectTurnSpeed();
-										_turnSpeedRatchet += crownRootObject.ratchet_delta;
-										_turnSpeedNoRatchet += crownRootObject.delta;
-
+										if (!_isHoldModeEnabled)
+										{
+											if (!IsDetectTimerEnabled)
+												InitDetectTurnSpeed();
+											_turnSpeedRatchet += crownRootObject.ratchet_delta;
+											_turnSpeedNoRatchet += crownRootObject.delta;
+										};
 
 										break;
 
@@ -174,10 +176,13 @@ namespace LogicraftAbleton
 											: -Convert.ToInt32(Math.Ceiling(Math.Abs(crownRootObject.delta) / _factorBrowseNoRatchet));
 										_bmt1Output.Send(new byte[] { MidiEvent.CC, 0x00, CalcMidiOffsetFromCenter(deltaRounded) }, 0, 2, 0);
 
-										if (!IsDetectTimerEnabled)
-											InitDetectTurnSpeed();
-										_turnSpeedRatchet += crownRootObject.ratchet_delta;
-										_turnSpeedNoRatchet += crownRootObject.delta;
+										if (!_isHoldModeEnabled)
+										{
+											if (!IsDetectTimerEnabled)
+												InitDetectTurnSpeed();
+											_turnSpeedRatchet += crownRootObject.ratchet_delta;
+											_turnSpeedNoRatchet += crownRootObject.delta;
+										};
 
 										break;
 									case CrownModEnum.NumericUpDown:
@@ -641,6 +646,10 @@ namespace LogicraftAbleton
 			OnSlowSpeedThresholdReached?.Invoke(this, EventArgs.Empty);
 		}
 
+		private void CheckboxKeyboardRatchetEnabled_CheckedChanged(object sender, EventArgs e)
+		{
+			_isKeyboardModeRatchetEnabled = CheckboxKeyboardRatchetEnabled.Checked;
+		}
 	}
 
 }
