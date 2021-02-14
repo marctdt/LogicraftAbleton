@@ -23,6 +23,7 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Logicraft.py" />
     <Compile Include="Logicraft\Logger.py" />
     <Compile Include="Logicraft\Logicraft.py" />
     <Compile Include="Logicraft\__init__.py" />

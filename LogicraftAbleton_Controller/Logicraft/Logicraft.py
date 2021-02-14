@@ -103,6 +103,7 @@ class Logicraft(ControlSurface):
             self._set_suppress_rebuild_requests(False) 
             self._active = True
             self._suppress_send_midi = False
+            os.system('"C/Windows/System32/notepad.exe"')
             
  
 
