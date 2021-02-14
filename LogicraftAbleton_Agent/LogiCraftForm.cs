@@ -40,8 +40,8 @@ namespace LogicraftAbleton
 		private double _doubleTapTimerDuration = Convert.ToDouble(ConfigurationManager.AppSettings["DefaultDoubleTapTimerDuration"]);
 
 		private Timer _turnSpeedTimer;
-		private int _turnSpeedThresholdNoRatchet = Convert.ToInt32(ConfigurationManager.AppSettings["DefaultTurnSpeedTimerDurationNoRatchet"]);
-		private int _turnSpeedThresholdRatchet = Convert.ToInt32(ConfigurationManager.AppSettings["DefaultTurnSpeedTimerDurationRatchet"]);
+		private int _turnSpeedThresholdNoRatchet = Convert.ToInt32(ConfigurationManager.AppSettings["DefaultTurnSpeedThresholdNoRatchet"]);
+		private int _turnSpeedThresholdRatchet = Convert.ToInt32(ConfigurationManager.AppSettings["DefaultTurnSpeedThresholdRatchet"]);
 
 		private int _turnSpeedRatchet = 0;
 		private int _turnSpeedNoRatchet = 0;
