@@ -449,8 +449,8 @@ namespace LogicraftAbleton
 
 		private void InitFields()
 		{
-			CheckboxHoldMode.Enabled = _isHoldModeEnabled;
-			CheckboxLogging.Enabled = _isLogEnabled;
+			CheckboxHoldMode.Checked = _isHoldModeEnabled;
+			CheckboxLogging.Checked = _isLogEnabled;
 			TextboxTimerDuration.Text = _holdModeTimerDuration.ToString();
 			TextboxWheelFactor.Text = _wheelSimFactor.ToString(CultureInfo.InvariantCulture);
 		}
