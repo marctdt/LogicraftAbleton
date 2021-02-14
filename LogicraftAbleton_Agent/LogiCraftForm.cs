@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Commons.Music.Midi;
@@ -28,6 +31,13 @@ namespace LogicraftAbleton
 		private WebSocket _client;
 		private IMidiOutput _bmt1Output;
 		private string _host = "ws://localhost:10134";
+		private int _countTapForDoubleTap=0;
+		private bool _isLogEnabled = Convert.ToBoolean(ConfigurationManager.AppSettings["DefaultEnableLogging"]);
+		private bool _isHoldModeEnabled = Convert.ToBoolean(ConfigurationManager.AppSettings["DefaultEnableHoldMode"]);
+		private int _holdModeTimerDuration = Convert.ToInt32(ConfigurationManager.AppSettings["DefaultHoldModeTimerDuration"]);
+		private double _wheelSimFactor = Convert.ToDouble(ConfigurationManager.AppSettings["DefaultWheelSimFactor"]);
+		private  double _factorBrowseNoRatchet = Convert.ToDouble(ConfigurationManager.AppSettings["DefaultFactorBrowseNoRatchet"]);
+		private double _doubleTapTimerDuration = Convert.ToDouble(ConfigurationManager.AppSettings["DefaultDoubleTapTimerDuration"]);
 		//private List<CrownRootObject> _crownObjectList = new List<CrownRootObject>();
 
 
@@ -99,7 +109,7 @@ namespace LogicraftAbleton
 								_countTapForDoubleTap++;
 								if (_countTapForDoubleTap == 2)
 									OnOnDoubleTap();
-								_timer = new System.Timers.Timer(_timerDuration) { Enabled = true };
+								_timer = new System.Timers.Timer(_holdModeTimerDuration) { Enabled = true };
 								_timer.Start();
 								//_timer.Elapsed += (sender, args) => ToolChange(_currentTool == "TabControl" ? "ProgressBar" : "TabControl");
 								_timer.Elapsed += (sender, args) =>
@@ -151,8 +161,8 @@ namespace LogicraftAbleton
 									WritelineInLogTextbox($"send midi to BMT 1 without Ratchet");
 									var deltaRounded = 0;
 									deltaRounded = crownRootObject.delta > 0
-										? Convert.ToInt32(Math.Ceiling(crownRootObject.delta / 10.0))
-										: -Convert.ToInt32(Math.Ceiling(Math.Abs(crownRootObject.delta) / 10.0));
+										? Convert.ToInt32(Math.Ceiling(crownRootObject.delta / _factorBrowseNoRatchet))
+										: -Convert.ToInt32(Math.Ceiling(Math.Abs(crownRootObject.delta) / _factorBrowseNoRatchet));
 									_bmt1Output.Send(new byte[] { MidiEvent.CC, 0x00, CalcMidiOffsetFromCenter(deltaRounded) }, 0, 2, 0);
 
 									break;
@@ -195,7 +205,6 @@ namespace LogicraftAbleton
 
 		public void SetupUIRefreshTimer()
 		{
-			m_form2 = this;
 
 			//System.Timers.Timer timer = new System.Timers.Timer(70);
 			//timer.Enabled = true;
@@ -210,12 +219,9 @@ namespace LogicraftAbleton
 
 		public void connection_watchdog_timer(object sender, System.Timers.ElapsedEventArgs e)
 		{
-			if (!_client.IsAlive)
-			{
-				_client = null;
-				connectWithManager();
-
-			}
+			if (_client.IsAlive) return;
+			_client = null;
+			connectWithManager();
 
 		}
 
@@ -361,7 +367,7 @@ namespace LogicraftAbleton
 		{
 			try
 			{
-				_client = new WebSocket(_host);
+				_client = new WebSocketSharp.WebSocket(_host);
 
 				_client.OnOpen += (ss, ee) =>
 				{
@@ -416,7 +422,6 @@ namespace LogicraftAbleton
 				string str = ex.Message;
 				WritelineInLogTextbox(str);
 				MessageBox.Show("Ableton is not started yet");
-				throw;
 			}
 		}
 
@@ -432,6 +437,7 @@ namespace LogicraftAbleton
 				await ConnectToAbletonAsync();
 
 				OnDoubleTap += (sender, args) => ToolChange(_currentTool == "NumericUpDown" ? "TabControl" : "NumericUpDown");
+				InitFields();
 			}
 			catch (Exception ex)
 			{
@@ -440,12 +446,14 @@ namespace LogicraftAbleton
 			}
 
 		}
-		public static LogiCraftForm m_form2;
-		private bool _isLogEnabled = false;
-		private bool _isHoldModeEnabled = false;
-		private int _timerDuration = 500;
-		private int _countTapForDoubleTap;
-		private double _wheelSimFactor = 4.4;
+
+		private void InitFields()
+		{
+			CheckboxHoldMode.Enabled = _isHoldModeEnabled;
+			CheckboxLogging.Enabled = _isLogEnabled;
+			TextboxTimerDuration.Text = _holdModeTimerDuration.ToString();
+			TextboxWheelFactor.Text = _wheelSimFactor.ToString(CultureInfo.InvariantCulture);
+		}
 
 		public LogiCraftForm()
 		{
@@ -497,11 +505,11 @@ namespace LogicraftAbleton
 
 		private void CheckboxHoldMode_CheckedChanged(object sender, EventArgs e) => _isHoldModeEnabled = CheckboxHoldMode.Checked;
 
-		private void TextboxTimerDuration_TextChanged(object sender, EventArgs e) => _timerDuration = Convert.ToInt32(TextboxTimerDuration.Text);
+		private void TextboxTimerDuration_TextChanged(object sender, EventArgs e) => _holdModeTimerDuration = Convert.ToInt32(TextboxTimerDuration.Text);
 
 		private void InitDetectDoubleTap()
 		{
-			_timerDoubleTap = new Timer(400) { Enabled = true };
+			_timerDoubleTap = new Timer(_doubleTapTimerDuration) { Enabled = true };
 			_timerDoubleTap.Elapsed += (sender, args) =>
 			 {
 				 _countTapForDoubleTap = 0;
