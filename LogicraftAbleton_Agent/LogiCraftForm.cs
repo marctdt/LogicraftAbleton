@@ -89,9 +89,9 @@ namespace LogicraftAbleton
 			var result = center + value;
 			return Convert.ToByte(result);
 		}
-			InputSimulator _inputSimulator = new InputSimulator();
+		InputSimulator _inputSimulator = new InputSimulator();
 
-		private CrownModEnum _currentTool = CrownModEnum.TabControl ;
+		private CrownModEnum _currentTool = CrownModEnum.TabControl;
 		public void updateUIWithDeserializedData(CrownRootObject crownRootObject)
 		{
 			switch (crownRootObject.message_type)
@@ -150,7 +150,7 @@ namespace LogicraftAbleton
 								Trace.Write("++ crown ratchet delta :" + crownRootObject.ratchet_delta + " slot delta = " + crownRootObject.delta + "\n");
 
 
-								Enum.TryParse(crownRootObject.task_options.current_tool,true,out CrownModEnum currentTool);
+								Enum.TryParse(crownRootObject.task_options.current_tool, true, out CrownModEnum currentTool);
 								switch (currentTool)
 								{
 									case CrownModEnum.TabControl:
@@ -216,7 +216,7 @@ namespace LogicraftAbleton
 											for (var i = 0; i < Math.Abs(deltaResult); i++)
 												_inputSimulator.Keyboard.KeyPress(currentTextBoxToolOption == TextBoxOptions.TextBoxHeight ? VirtualKeyCode.UP : VirtualKeyCode.LEFT);
 										break;
-									
+
 
 									default:
 										break;
@@ -510,7 +510,7 @@ namespace LogicraftAbleton
 				nextTool = 0;
 			return nextTool;
 
-		} 
+		}
 
 		private void InitFields()
 		{
