@@ -28,6 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LogiCraftForm));
 			this.logBox = new System.Windows.Forms.RichTextBox();
 			this.CheckboxLogging = new System.Windows.Forms.CheckBox();
 			this.ButtonReconnect = new System.Windows.Forms.Button();
@@ -127,9 +128,10 @@
 			this.Controls.Add(this.ButtonReconnect);
 			this.Controls.Add(this.CheckboxLogging);
 			this.Controls.Add(this.logBox);
+			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.Margin = new System.Windows.Forms.Padding(2);
 			this.Name = "LogiCraftForm";
-			this.Text = "WinFormsCrownSample";
+			this.Text = "Logicraft for Ableton";
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
