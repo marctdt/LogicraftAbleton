@@ -37,6 +37,7 @@
 			this.label1 = new System.Windows.Forms.Label();
 			this.TextboxWheelFactor = new System.Windows.Forms.TextBox();
 			this.label2 = new System.Windows.Forms.Label();
+			this.CheckboxKeyboardRatchetEnabled = new System.Windows.Forms.CheckBox();
 			this.SuspendLayout();
 			// 
 			// logBox
@@ -60,7 +61,7 @@
 			// 
 			// ButtonReconnect
 			// 
-			this.ButtonReconnect.Location = new System.Drawing.Point(636, 101);
+			this.ButtonReconnect.Location = new System.Drawing.Point(636, 125);
 			this.ButtonReconnect.Name = "ButtonReconnect";
 			this.ButtonReconnect.Size = new System.Drawing.Size(75, 23);
 			this.ButtonReconnect.TabIndex = 3;
@@ -81,7 +82,7 @@
 			// 
 			// TextboxTimerDuration
 			// 
-			this.TextboxTimerDuration.Location = new System.Drawing.Point(717, 50);
+			this.TextboxTimerDuration.Location = new System.Drawing.Point(717, 74);
 			this.TextboxTimerDuration.Name = "TextboxTimerDuration";
 			this.TextboxTimerDuration.Size = new System.Drawing.Size(51, 20);
 			this.TextboxTimerDuration.TabIndex = 5;
@@ -91,7 +92,7 @@
 			// label1
 			// 
 			this.label1.AutoSize = true;
-			this.label1.Location = new System.Drawing.Point(625, 53);
+			this.label1.Location = new System.Drawing.Point(625, 77);
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(76, 13);
 			this.label1.TabIndex = 6;
@@ -99,7 +100,7 @@
 			// 
 			// TextboxWheelFactor
 			// 
-			this.TextboxWheelFactor.Location = new System.Drawing.Point(717, 77);
+			this.TextboxWheelFactor.Location = new System.Drawing.Point(717, 101);
 			this.TextboxWheelFactor.Name = "TextboxWheelFactor";
 			this.TextboxWheelFactor.Size = new System.Drawing.Size(51, 20);
 			this.TextboxWheelFactor.TabIndex = 7;
@@ -109,17 +110,28 @@
 			// label2
 			// 
 			this.label2.AutoSize = true;
-			this.label2.Location = new System.Drawing.Point(625, 80);
+			this.label2.Location = new System.Drawing.Point(625, 104);
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(91, 13);
 			this.label2.TabIndex = 8;
 			this.label2.Text = "Wheel Sim Factor";
 			// 
-			// LogiCraftForm
+			// CheckboxKeyboardRatchetEnabled
+			// 
+			this.CheckboxKeyboardRatchetEnabled.AutoSize = true;
+			this.CheckboxKeyboardRatchetEnabled.Location = new System.Drawing.Point(625, 56);
+			this.CheckboxKeyboardRatchetEnabled.Name = "CheckboxKeyboardRatchetEnabled";
+			this.CheckboxKeyboardRatchetEnabled.Size = new System.Drawing.Size(148, 17);
+			this.CheckboxKeyboardRatchetEnabled.TabIndex = 9;
+			this.CheckboxKeyboardRatchetEnabled.Text = "Enable Ratchet for Key In";
+			this.CheckboxKeyboardRatchetEnabled.UseVisualStyleBackColor = true;
+			// 
+			// LogicraftForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(778, 635);
+			this.Controls.Add(this.CheckboxKeyboardRatchetEnabled);
 			this.Controls.Add(this.label2);
 			this.Controls.Add(this.TextboxWheelFactor);
 			this.Controls.Add(this.label1);
@@ -147,5 +159,6 @@
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.TextBox TextboxWheelFactor;
 		private System.Windows.Forms.Label label2;
+		private System.Windows.Forms.CheckBox CheckboxKeyboardRatchetEnabled;
 	}
 }

@@ -7,6 +7,8 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using WindowsInput;
+using WindowsInput.Native;
 using Commons.Music.Midi;
 using LogicraftAbleton.Model;
 using Newtonsoft.Json;
@@ -41,6 +43,7 @@ namespace LogicraftAbleton
 		private Timer _turnSpeedTimer;
 		private int _turnSpeedThresholdNoRatchet = Convert.ToInt32(ConfigurationManager.AppSettings["DefaultTurnSpeedThresholdNoRatchet"]);
 		private int _turnSpeedThresholdRatchet = Convert.ToInt32(ConfigurationManager.AppSettings["DefaultTurnSpeedThresholdRatchet"]);
+		private bool _isKeyboardModeRatchetEnabled = Convert.ToBoolean(ConfigurationManager.AppSettings["DefaultIsKeyboardModeRatchetEnabled"]);
 
 		private int _turnSpeedRatchet = 0;
 		private int _turnSpeedNoRatchet = 0;
@@ -50,7 +53,7 @@ namespace LogicraftAbleton
 		public event EventHandler OnSlowSpeedThresholdReached;
 
 
-		public void ToolChange(string contextName)
+		public void ToolChange(CrownModEnum contextName)
 		{
 			try
 			{
@@ -58,7 +61,7 @@ namespace LogicraftAbleton
 				{
 					message_type = "tool_change",
 					session_id = _sessionId,
-					tool_id = contextName
+					tool_id = contextName.ToString()
 				};
 
 				var s = JsonConvert.SerializeObject(toolChangeObject);
@@ -78,12 +81,7 @@ namespace LogicraftAbleton
 
 		[DllImport("user32.dll")]
 		public static extern void mouse_event(int dwFlags, int dx, int dy, int dwData, int dwExtraInfo);
-
-		public new void Scroll(int data)
-		{
-			// this will cause a vertical scroll
-			mouse_event(0x0800, 0, 0, data, 0);
-		}
+		public new void Scroll(int data) => mouse_event(0x0800, 0, 0, data, 0);
 
 		private byte CalcMidiOffsetFromCenter(int value)
 		{
@@ -91,8 +89,9 @@ namespace LogicraftAbleton
 			var result = center + value;
 			return Convert.ToByte(result);
 		}
+			InputSimulator _inputSimulator = new InputSimulator();
 
-		private string _currentTool = "";
+		private CrownModEnum _currentTool = CrownModEnum.TabControl ;
 		public void updateUIWithDeserializedData(CrownRootObject crownRootObject)
 		{
 			switch (crownRootObject.message_type)
@@ -101,7 +100,7 @@ namespace LogicraftAbleton
 					return;
 				case "register_ack":
 					_sessionId = crownRootObject.session_id;
-					ToolChange("TabControl");
+					ToolChange(CrownModEnum.TabControl);
 					return;
 				default:
 					WritelineInLogTextbox($"message_type is {crownRootObject.message_type}");
@@ -124,11 +123,11 @@ namespace LogicraftAbleton
 								//_timer.Elapsed += (sender, args) => ToolChange(_currentTool == "TabControl" ? "ProgressBar" : "TabControl");
 								_timer.Elapsed += (sender, args) =>
 								{
-									if (_currentTool != "NumericUpDown")
+									if (_currentTool != CrownModEnum.NumericUpDown)
 										if (_isHoldModeEnabled)
-											ToolChange(_currentTool == "TabControl" ? "ProgressBar" : "TabControl");
+											ToolChange(_currentTool == CrownModEnum.TabControl ? CrownModEnum.ProgressBar : CrownModEnum.TabControl);
 										else
-											ToolChange("ProgressBar");
+											ToolChange(CrownModEnum.ProgressBar);
 									_timer.Stop();
 									_timer.Close();
 									_timer.Dispose();
@@ -136,67 +135,89 @@ namespace LogicraftAbleton
 							}
 							else
 							{
-								if (_currentTool != "NumericUpDown")
+								if (_currentTool == CrownModEnum.ProgressBar)
 									if (!_isHoldModeEnabled)
-										ToolChange("TabControl");
+										ToolChange(CrownModEnum.TabControl);
 								RestoreDetectTurnSpeed();
 							}
 
 						}
-						else if (crownRootObject.message_type == "crown_turn_event")
+						else
 						{
-							// received a crown turn event from Craft crown
-							Trace.Write("++ crown ratchet delta :" + crownRootObject.ratchet_delta + " slot delta = " + crownRootObject.delta + "\n");
-
-							switch (crownRootObject.task_options.current_tool)
+							if (crownRootObject.message_type == "crown_turn_event")
 							{
-								case "TabControl":
-									var command = JsonConvert.SerializeObject(new AbletonCommand() { command = "scroll", direction = crownRootObject.ratchet_delta > 0 ? 1 : 0 });
-									//WritelineInLogTextbox($"Send to ableton: {command}");
-									WritelineInLogTextbox($"send midi to BMT 1 with Ratchet");
-									_bmt1Output.Send(new byte[] { MidiEvent.CC, 0x00, CalcMidiOffsetFromCenter(crownRootObject.ratchet_delta) }, 0, 2, 0);
-									if (!IsDetectTimerEnabled)
-										InitDetectTurnSpeed();
-									_turnSpeedRatchet += crownRootObject.ratchet_delta;
-									_turnSpeedNoRatchet += crownRootObject.delta;
+								// received a crown turn event from Craft crown
+								Trace.Write("++ crown ratchet delta :" + crownRootObject.ratchet_delta + " slot delta = " + crownRootObject.delta + "\n");
 
 
-									break;
+								Enum.TryParse(crownRootObject.task_options.current_tool,true,out CrownModEnum currentTool);
+								switch (currentTool)
+								{
+									case CrownModEnum.TabControl:
+										var command = JsonConvert.SerializeObject(new AbletonCommand() { command = "scroll", direction = crownRootObject.ratchet_delta > 0 ? 1 : 0 });
+										//WritelineInLogTextbox($"Send to ableton: {command}");
+										WritelineInLogTextbox($"send midi to BMT 1 with Ratchet");
+										_bmt1Output.Send(new byte[] { MidiEvent.CC, 0x00, CalcMidiOffsetFromCenter(crownRootObject.ratchet_delta) }, 0, 2, 0);
+										if (!IsDetectTimerEnabled)
+											InitDetectTurnSpeed();
+										_turnSpeedRatchet += crownRootObject.ratchet_delta;
+										_turnSpeedNoRatchet += crownRootObject.delta;
 
-								case "ProgressBar":
-									WritelineInLogTextbox($"send midi to BMT 1 without Ratchet");
-									var deltaRounded = 0;
-									deltaRounded = crownRootObject.delta > 0
-										? Convert.ToInt32(Math.Ceiling(crownRootObject.delta / _factorBrowseNoRatchet))
-										: -Convert.ToInt32(Math.Ceiling(Math.Abs(crownRootObject.delta) / _factorBrowseNoRatchet));
-									_bmt1Output.Send(new byte[] { MidiEvent.CC, 0x00, CalcMidiOffsetFromCenter(deltaRounded) }, 0, 2, 0);
 
-									if (!IsDetectTimerEnabled)
-										InitDetectTurnSpeed();
-									_turnSpeedRatchet += crownRootObject.ratchet_delta;
-									_turnSpeedNoRatchet += crownRootObject.delta;
+										break;
 
-									break;
-								case "NumericUpDown":
-									//var factorWheel = 0;
-									//factorWheel = crownRootObject.delta > 0
-									//	? Convert.ToInt32(Math.Ceiling(crownRootObject.delta / _wheelSimFactor))
-									//	: -Convert.ToInt32(Math.Ceiling(Math.Abs(crownRootObject.delta) / _wheelSimFactor));
-									//var deltaWheel = factorWheel * Mhousewheelunit;
+									case CrownModEnum.ProgressBar:
+										WritelineInLogTextbox($"send midi to BMT 1 without Ratchet");
+										var deltaRounded = 0;
+										deltaRounded = crownRootObject.delta > 0
+											? Convert.ToInt32(Math.Ceiling(crownRootObject.delta / _factorBrowseNoRatchet))
+											: -Convert.ToInt32(Math.Ceiling(Math.Abs(crownRootObject.delta) / _factorBrowseNoRatchet));
+										_bmt1Output.Send(new byte[] { MidiEvent.CC, 0x00, CalcMidiOffsetFromCenter(deltaRounded) }, 0, 2, 0);
 
-									var deltaWheel = crownRootObject.delta > 0
-										? Convert.ToInt32(Math.Ceiling(crownRootObject.delta * _wheelSimFactor))
-										: -Convert.ToInt32(Math.Ceiling(Math.Abs(crownRootObject.delta) * _wheelSimFactor));
+										if (!IsDetectTimerEnabled)
+											InitDetectTurnSpeed();
+										_turnSpeedRatchet += crownRootObject.ratchet_delta;
+										_turnSpeedNoRatchet += crownRootObject.delta;
 
-									//WritelineInLogTextbox($"Mouse wheel {factorWheel} -- {deltaWheel}");
-									Scroll(deltaWheel);
-									break;
+										break;
+									case CrownModEnum.NumericUpDown:
+										//var factorWheel = 0;
+										//factorWheel = crownRootObject.delta > 0
+										//	? Convert.ToInt32(Math.Ceiling(crownRootObject.delta / _wheelSimFactor))
+										//	: -Convert.ToInt32(Math.Ceiling(Math.Abs(crownRootObject.delta) / _wheelSimFactor));
+										//var deltaWheel = factorWheel * Mhousewheelunit;
 
-								default:
-									break;
+										var deltaWheel = crownRootObject.delta > 0
+											? Convert.ToInt32(Math.Ceiling(crownRootObject.delta * _wheelSimFactor))
+											: -Convert.ToInt32(Math.Ceiling(Math.Abs(crownRootObject.delta) * _wheelSimFactor));
+
+										//WritelineInLogTextbox($"Mouse wheel {factorWheel} -- {deltaWheel}");
+										Scroll(deltaWheel);
+										break;
+									case CrownModEnum.TextBox:
+										Enum.TryParse(crownRootObject.task_options.current_tool_option, true, out TextBoxOptions currentTextBoxToolOption);
+										var deltaRoundedKeyboard = crownRootObject.delta > 0
+											? Convert.ToInt32(Math.Ceiling(crownRootObject.delta / _factorBrowseNoRatchet))
+											: -Convert.ToInt32(Math.Ceiling(Math.Abs(crownRootObject.delta) / _factorBrowseNoRatchet));
+
+										var deltaResult = _isKeyboardModeRatchetEnabled
+											? crownRootObject.ratchet_delta
+											: deltaRoundedKeyboard;
+
+										if (deltaResult > 0)
+											for (var i = 0; i < deltaResult; i++)
+												_inputSimulator.Keyboard.KeyPress(currentTextBoxToolOption == TextBoxOptions.TextBoxHeight ? VirtualKeyCode.DOWN : VirtualKeyCode.RIGHT);
+										else if (deltaResult < 0)
+											for (var i = 0; i < Math.Abs(deltaResult); i++)
+												_inputSimulator.Keyboard.KeyPress(currentTextBoxToolOption == TextBoxOptions.TextBoxHeight ? VirtualKeyCode.UP : VirtualKeyCode.LEFT);
+										break;
+									
+
+									default:
+										break;
+								}
 							}
 						}
-
 					}
 					catch (Exception ex)
 					{
@@ -438,6 +459,15 @@ namespace LogicraftAbleton
 			}
 		}
 
+
+		public enum CrownModEnum
+		{
+			TabControl,
+			ProgressBar,
+			NumericUpDown,
+			TextBox
+		}
+
 		public async void Init()
 		{
 			try
@@ -449,9 +479,10 @@ namespace LogicraftAbleton
 				connectWithManager();
 				await ConnectToAbletonAsync();
 
-				OnDoubleTap += (sender, args) => ToolChange(_currentTool == "NumericUpDown" ? "TabControl" : "NumericUpDown");
-				OnFastSpeedThresholdReached += (sender, args) => ToolChange(("ProgressBar"));
-				OnSlowSpeedThresholdReached += (sender, args) => ToolChange(("TabControl"));
+
+				OnDoubleTap += (sender, args) => ToolChange(GetNextTool());
+				OnFastSpeedThresholdReached += (sender, args) => ToolChange((CrownModEnum.ProgressBar));
+				OnSlowSpeedThresholdReached += (sender, args) => ToolChange((CrownModEnum.TabControl));
 				InitFields();
 			}
 			catch (Exception ex)
@@ -463,10 +494,24 @@ namespace LogicraftAbleton
 
 		}
 
+		private CrownModEnum GetNextTool()
+		{
+			var crowModCount = Enum.GetNames(typeof(CrownModEnum)).Length;
+			var nextTool = _currentTool + 1 != CrownModEnum.ProgressBar
+				? _currentTool + 1
+				: CrownModEnum.ProgressBar + 1;
+
+			if ((int)nextTool > crowModCount)
+				nextTool = 0;
+			return nextTool;
+
+		} 
+
 		private void InitFields()
 		{
 			CheckboxHoldMode.Checked = _isHoldModeEnabled;
 			CheckboxLogging.Checked = _isLogEnabled;
+			CheckboxKeyboardRatchetEnabled.Checked = _isKeyboardModeRatchetEnabled;
 			TextboxTimerDuration.Text = _holdModeTimerDuration.ToString();
 			TextboxWheelFactor.Text = _wheelSimFactor.ToString(CultureInfo.InvariantCulture);
 		}
@@ -543,9 +588,9 @@ namespace LogicraftAbleton
 		{
 			_turnSpeedRatchet = 0;
 			_turnSpeedNoRatchet = 0;
-			_turnSpeedTimer.Stop();
-			_turnSpeedTimer.Close();
-			_turnSpeedTimer.Dispose();
+			_turnSpeedTimer?.Stop();
+			_turnSpeedTimer?.Close();
+			_turnSpeedTimer?.Dispose();
 
 		}
 
@@ -566,9 +611,9 @@ namespace LogicraftAbleton
 		{
 			WritelineInLogTextbox("double tap detected");
 			_countTapForDoubleTap = 0;
-			_timerDoubleTap.Stop();
-			_timerDoubleTap.Close();
-			_timerDoubleTap.Dispose();
+			_timerDoubleTap?.Stop();
+			_timerDoubleTap?.Close();
+			_timerDoubleTap?.Dispose();
 			OnDoubleTap?.Invoke(this, EventArgs.Empty);
 		}
 
@@ -595,6 +640,7 @@ namespace LogicraftAbleton
 			WritelineInLogTextbox("Slow Threshold Reached");
 			OnSlowSpeedThresholdReached?.Invoke(this, EventArgs.Empty);
 		}
+
 	}
 
 }
