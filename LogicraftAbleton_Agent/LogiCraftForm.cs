@@ -501,7 +501,7 @@ namespace LogicraftAbleton
 				? _currentTool + 1
 				: CrownModEnum.ProgressBar + 1;
 
-			if ((int)nextTool > crowModCount)
+			if ((int)nextTool >= crowModCount)
 				nextTool = 0;
 			return nextTool;
 
