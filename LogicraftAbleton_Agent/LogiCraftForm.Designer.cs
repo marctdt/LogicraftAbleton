@@ -32,7 +32,6 @@
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LogicraftForm));
 			this.logBox = new System.Windows.Forms.RichTextBox();
 			this.CheckboxLogging = new System.Windows.Forms.CheckBox();
-			this.ButtonReconnect = new System.Windows.Forms.Button();
 			this.CheckboxHoldMode = new System.Windows.Forms.CheckBox();
 			this.TextboxTimerDuration = new System.Windows.Forms.TextBox();
 			this.label1 = new System.Windows.Forms.Label();
@@ -40,6 +39,10 @@
 			this.label2 = new System.Windows.Forms.Label();
 			this.CheckboxKeyboardRatchetEnabled = new System.Windows.Forms.CheckBox();
 			this.LogicraftNotifyTray = new System.Windows.Forms.NotifyIcon(this.components);
+			this.ButtonReconnect = new System.Windows.Forms.Button();
+			this.LogicraftTrayContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.LogicraftTrayContextMenu.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// logBox
@@ -60,16 +63,6 @@
 			this.CheckboxLogging.Text = "Enable Logging";
 			this.CheckboxLogging.UseVisualStyleBackColor = true;
 			this.CheckboxLogging.CheckedChanged += new System.EventHandler(this.CheckboxLogging_CheckedChanged);
-			// 
-			// ButtonReconnect
-			// 
-			this.ButtonReconnect.Location = new System.Drawing.Point(636, 125);
-			this.ButtonReconnect.Name = "ButtonReconnect";
-			this.ButtonReconnect.Size = new System.Drawing.Size(75, 23);
-			this.ButtonReconnect.TabIndex = 3;
-			this.ButtonReconnect.Text = "Reconnect";
-			this.ButtonReconnect.UseVisualStyleBackColor = true;
-			this.ButtonReconnect.Click += new System.EventHandler(this.ButtonReconnect_Click);
 			// 
 			// CheckboxHoldMode
 			// 
@@ -131,10 +124,36 @@
 			// 
 			// LogicraftNotifyTray
 			// 
+			this.LogicraftNotifyTray.ContextMenuStrip = this.LogicraftTrayContextMenu;
 			this.LogicraftNotifyTray.Icon = ((System.Drawing.Icon)(resources.GetObject("LogicraftNotifyTray.Icon")));
 			this.LogicraftNotifyTray.Text = "Logicraft for Ableton";
 			this.LogicraftNotifyTray.Visible = true;
 			this.LogicraftNotifyTray.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.LogicraftNotifyTray_MouseDoubleClick);
+			// 
+			// ButtonReconnect
+			// 
+			this.ButtonReconnect.Location = new System.Drawing.Point(636, 125);
+			this.ButtonReconnect.Name = "ButtonReconnect";
+			this.ButtonReconnect.Size = new System.Drawing.Size(75, 23);
+			this.ButtonReconnect.TabIndex = 3;
+			this.ButtonReconnect.Text = "Reconnect";
+			this.ButtonReconnect.UseVisualStyleBackColor = true;
+			this.ButtonReconnect.Visible = false;
+			this.ButtonReconnect.Click += new System.EventHandler(this.ButtonReconnect_Click);
+			// 
+			// LogicraftTrayContextMenu
+			// 
+			this.LogicraftTrayContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.exitToolStripMenuItem});
+			this.LogicraftTrayContextMenu.Name = "LogicraftTrayContextMenu";
+			this.LogicraftTrayContextMenu.Size = new System.Drawing.Size(181, 48);
+			// 
+			// exitToolStripMenuItem
+			// 
+			this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+			this.exitToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.exitToolStripMenuItem.Text = "Exit";
+			this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
 			// 
 			// LogicraftForm
 			// 
@@ -155,6 +174,7 @@
 			this.Name = "LogicraftForm";
 			this.Text = "Logicraft for Ableton";
 			this.Resize += new System.EventHandler(this.LogicraftForm_Resize);
+			this.LogicraftTrayContextMenu.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -164,7 +184,6 @@
 
 		private System.Windows.Forms.CheckBox CheckboxLogging;
 		private System.Windows.Forms.RichTextBox logBox;
-		private System.Windows.Forms.Button ButtonReconnect;
 		private System.Windows.Forms.CheckBox CheckboxHoldMode;
 		private System.Windows.Forms.TextBox TextboxTimerDuration;
 		private System.Windows.Forms.Label label1;
@@ -172,5 +191,8 @@
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.CheckBox CheckboxKeyboardRatchetEnabled;
 		private System.Windows.Forms.NotifyIcon LogicraftNotifyTray;
+		private System.Windows.Forms.Button ButtonReconnect;
+		private System.Windows.Forms.ContextMenuStrip LogicraftTrayContextMenu;
+		private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
 	}
 }

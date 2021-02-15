@@ -521,7 +521,7 @@ namespace LogicraftAbleton
 			TextboxTimerDuration.Text = _holdModeTimerDuration.ToString();
 			TextboxWheelFactor.Text = _wheelSimFactor.ToString(CultureInfo.InvariantCulture);
 			WindowState = FormWindowState.Minimized;
-			Hide();
+			LogicraftForm_Resize(this,null);
 		}
 
 		public LogicraftForm()
@@ -656,7 +656,6 @@ namespace LogicraftAbleton
 
 		private void LogicraftForm_Resize(object sender, EventArgs e)
 		{
-
 			if (this.WindowState == FormWindowState.Minimized)
 			{
 				Hide();
@@ -669,6 +668,20 @@ namespace LogicraftAbleton
 			Show();
 			this.WindowState = FormWindowState.Normal;
 			LogicraftNotifyTray.Visible = false;
+		}
+
+		private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if (System.Windows.Forms.Application.MessageLoop)
+			{
+				// WinForms app
+				System.Windows.Forms.Application.Exit();
+			}
+			else
+			{
+				// Console app
+				System.Environment.Exit(1);
+			}
 		}
 	}
 
