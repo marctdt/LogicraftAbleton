@@ -39,9 +39,10 @@
 			this.label2 = new System.Windows.Forms.Label();
 			this.CheckboxKeyboardRatchetEnabled = new System.Windows.Forms.CheckBox();
 			this.LogicraftNotifyTray = new System.Windows.Forms.NotifyIcon(this.components);
-			this.ButtonReconnect = new System.Windows.Forms.Button();
 			this.LogicraftTrayContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.ButtonReconnect = new System.Windows.Forms.Button();
+			this.showToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.LogicraftTrayContextMenu.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -128,7 +129,23 @@
 			this.LogicraftNotifyTray.Icon = ((System.Drawing.Icon)(resources.GetObject("LogicraftNotifyTray.Icon")));
 			this.LogicraftNotifyTray.Text = "Logicraft for Ableton";
 			this.LogicraftNotifyTray.Visible = true;
+			this.LogicraftNotifyTray.Click += new System.EventHandler(this.LogicraftNotifyTray_Click);
 			this.LogicraftNotifyTray.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.LogicraftNotifyTray_MouseDoubleClick);
+			// 
+			// LogicraftTrayContextMenu
+			// 
+			this.LogicraftTrayContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.showToolStripMenuItem,
+            this.exitToolStripMenuItem});
+			this.LogicraftTrayContextMenu.Name = "LogicraftTrayContextMenu";
+			this.LogicraftTrayContextMenu.Size = new System.Drawing.Size(181, 70);
+			// 
+			// exitToolStripMenuItem
+			// 
+			this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+			this.exitToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.exitToolStripMenuItem.Text = "Exit";
+			this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
 			// 
 			// ButtonReconnect
 			// 
@@ -141,19 +158,12 @@
 			this.ButtonReconnect.Visible = false;
 			this.ButtonReconnect.Click += new System.EventHandler(this.ButtonReconnect_Click);
 			// 
-			// LogicraftTrayContextMenu
+			// showToolStripMenuItem
 			// 
-			this.LogicraftTrayContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.exitToolStripMenuItem});
-			this.LogicraftTrayContextMenu.Name = "LogicraftTrayContextMenu";
-			this.LogicraftTrayContextMenu.Size = new System.Drawing.Size(94, 26);
-			// 
-			// exitToolStripMenuItem
-			// 
-			this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-			this.exitToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-			this.exitToolStripMenuItem.Text = "Exit";
-			this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
+			this.showToolStripMenuItem.Name = "showToolStripMenuItem";
+			this.showToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.showToolStripMenuItem.Text = "Show";
+			this.showToolStripMenuItem.Click += new System.EventHandler(this.showToolStripMenuItem_Click);
 			// 
 			// LogicraftForm
 			// 
@@ -195,5 +205,6 @@
 		private System.Windows.Forms.Button ButtonReconnect;
 		private System.Windows.Forms.ContextMenuStrip LogicraftTrayContextMenu;
 		private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem showToolStripMenuItem;
 	}
 }

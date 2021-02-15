@@ -687,6 +687,17 @@ namespace LogicraftAbleton
 		{
 			Hide();
 		}
+
+		private void LogicraftNotifyTray_Click(object sender, EventArgs e)
+		{
+			LogicraftTrayContextMenu.Show();
+
+		}
+
+		private void showToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			LogicraftNotifyTray_MouseDoubleClick(sender, null);
+		}
 	}
 
 }
