@@ -598,18 +598,16 @@ namespace LogicraftAbleton
 				switch (args.KeyCode)
 				{
 					case Keys.OemQuotes when args.Modifiers == (Keys.Alt | Keys.Shift):
+						args.SuppressKeyPress = true;
 						ToolChange(CrownModEnum.TabControl);
-						goto default;
+						break;
 					case Keys.Oemcomma when args.Modifiers == (Keys.Alt | Keys.Shift):
 						args.SuppressKeyPress = true;
 						ToolChange(CrownModEnum.NumericUpDown);
-						goto default;
+						break;
 					case Keys.OemPeriod when args.Modifiers == (Keys.Alt | Keys.Shift):
 						args.SuppressKeyPress = true;
 						ToolChange(CrownModEnum.TextBox);
-						goto default;
-					default:
-						args.SuppressKeyPress = true;
 						break;
 				}
 			};
