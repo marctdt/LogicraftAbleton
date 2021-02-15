@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using WindowsInput;
 using WindowsInput.Native;
 using Commons.Music.Midi;
+using LogicraftAbleton.Helpers;
 using LogicraftAbleton.Model;
 using Newtonsoft.Json;
 using WebSocketSharp;
@@ -397,11 +398,19 @@ namespace LogicraftAbleton
 			//	_abletonServer.Start();
 
 
+			try
+			{
 
-			var access = MidiAccessManager.Default;
-			_bmt1Output = await access.OpenOutputAsync(access.Outputs.First(x => x.Name == "BMT 1").Id);
-			//_bmt1Input = await access.OpenInputAsync(access.Inputs.First(x => x.Name == "BMT 1").Id);
-			WritelineInLogTextbox($"Connected to BMT 1");
+				var access = MidiAccessManager.Default;
+				_bmt1Output = await access.OpenOutputAsync(access.Outputs.First(x => x.Name == "BMT 1").Id);
+				//_bmt1Input = await access.OpenInputAsync(access.Inputs.First(x => x.Name == "BMT 1").Id);
+				WritelineInLogTextbox($"Connected to BMT 1");
+			}
+			catch (Exception e)
+			{
+				WritelineInLogTextbox(e.StackTrace);
+				MessageBox.Show("Cannot connect to midi device");
+			}
 		}
 
 		public void connectWithManager()
@@ -491,12 +500,15 @@ namespace LogicraftAbleton
 				OnFastSpeedThresholdReached += (sender, args) => ToolChange((CrownModEnum.ProgressBar));
 				OnSlowSpeedThresholdReached += (sender, args) => ToolChange((CrownModEnum.TabControl));
 				InitUi();
+				var closeListener = new ClosingWsListener();
+				closeListener.OnCloseRequest += exitToolStripMenuItem_Click;
 			}
 			catch (Exception ex)
 			{
 				string str = ex.Message;
 				WritelineInLogTextbox(ex.StackTrace);
 				MessageBox.Show(str);
+				exitToolStripMenuItem_Click(this,null);
 			}
 
 		}
@@ -672,6 +684,7 @@ namespace LogicraftAbleton
 
 		private void exitToolStripMenuItem_Click(object sender, EventArgs e)
 		{
+			LogicraftNotifyTray.Visible = false;
 			if (System.Windows.Forms.Application.MessageLoop)
 			{
 				// WinForms app

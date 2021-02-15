@@ -27,10 +27,30 @@
     <Compile Include="Logicraft\Logger.py" />
     <Compile Include="Logicraft\Logicraft.py" />
     <Compile Include="Logicraft\__init__.py" />
+    <Compile Include="Logicraft\lib\websocket\tests\test_cookiejar.py" />
+    <Compile Include="Logicraft\lib\websocket\tests\test_websocket.py" />
+    <Compile Include="Logicraft\lib\websocket\tests\__init__.py" />
+    <Compile Include="Logicraft\lib\websocket\_abnf.py" />
+    <Compile Include="Logicraft\lib\websocket\_app.py" />
+    <Compile Include="Logicraft\lib\websocket\_cookiejar.py" />
+    <Compile Include="Logicraft\lib\websocket\_core.py" />
+    <Compile Include="Logicraft\lib\websocket\_exceptions.py" />
+    <Compile Include="Logicraft\lib\websocket\_handshake.py" />
+    <Compile Include="Logicraft\lib\websocket\_http.py" />
+    <Compile Include="Logicraft\lib\websocket\_logging.py" />
+    <Compile Include="Logicraft\lib\websocket\_socket.py" />
+    <Compile Include="Logicraft\lib\websocket\_ssl_compat.py" />
+    <Compile Include="Logicraft\lib\websocket\_url.py" />
+    <Compile Include="Logicraft\lib\websocket\_utils.py" />
+    <Compile Include="Logicraft\lib\websocket\__init__.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Logicraft\" />
+    <Folder Include="Logicraft\lib\" />
     <Folder Include="Logicraft\__pycache__\" />
+    <Folder Include="Logicraft\lib\websocket\" />
+    <Folder Include="Logicraft\lib\websocket\tests\" />
+    <Folder Include="Logicraft\lib\websocket\tests\data\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Logicraft\LivePlaylist.pybakClient" />
@@ -40,6 +60,13 @@
     <Content Include="Logicraft\__pycache__\Logicraft.cpython-37.pyc" />
     <Content Include="Logicraft\__pycache__\SimpleDeviceComponent.cpython-37.pyc" />
     <Content Include="Logicraft\__pycache__\__init__.cpython-37.pyc" />
+    <Content Include="Logicraft\lib\websocket\tests\data\header01.txt" />
+    <Content Include="Logicraft\lib\websocket\tests\data\header02.txt" />
+    <Content Include="Logicraft\lib\websocket\tests\test_cookiejar.py.bak" />
+    <Content Include="Logicraft\lib\websocket\tests\test_websocket.py.bak" />
+    <Content Include="Logicraft\lib\websocket\_cookiejar.py.bak" />
+    <Content Include="Logicraft\lib\websocket\_core.py.bak" />
+    <Content Include="Logicraft\lib\websocket\_handshake.py.bak" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

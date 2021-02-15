@@ -87,6 +87,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Helpers\ClosingWsListener.cs" />
     <Compile Include="Model\AbletonCommand.cs" />
     <Compile Include="Model\CrownRegisterRootObject.cs" />
     <Compile Include="Model\CrownRootObject.cs" />
@@ -175,7 +176,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Helpers\" />
+    <Folder Include="NewFolder1\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
