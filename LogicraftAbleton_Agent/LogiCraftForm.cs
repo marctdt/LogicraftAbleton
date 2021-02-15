@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -690,8 +691,10 @@ namespace LogicraftAbleton
 
 		private void LogicraftNotifyTray_Click(object sender, EventArgs e)
 		{
-			LogicraftTrayContextMenu.Show();
-
+			if (((MouseEventArgs)e).Button != MouseButtons.Left) return;
+			var mi = typeof(NotifyIcon).GetMethod("ShowContextMenu",
+				BindingFlags.Instance | BindingFlags.NonPublic);
+			mi?.Invoke(LogicraftNotifyTray, null);
 		}
 
 		private void showToolStripMenuItem_Click(object sender, EventArgs e)
