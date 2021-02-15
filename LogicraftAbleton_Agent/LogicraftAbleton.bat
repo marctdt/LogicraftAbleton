@@ -1,1 +1,0 @@
-start /b "" "C:\ProgramData\Ableton\Live 11 Beta\Resources\MIDI Remote Scripts\Logicraft\LogicraftAgent\LogicraftAbleton.exe"

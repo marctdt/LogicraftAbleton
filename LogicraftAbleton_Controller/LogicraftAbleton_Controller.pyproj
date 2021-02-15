@@ -23,9 +23,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Logicraft.py" />
-    <Compile Include="Logicraft\Logger.py" />
     <Compile Include="Logicraft\Logicraft.py" />
+    <Compile Include="Logicraft\lib\six.py" />
+    <Compile Include="Logicraft\Logger.py" />
     <Compile Include="Logicraft\__init__.py" />
     <Compile Include="Logicraft\lib\websocket\tests\test_cookiejar.py" />
     <Compile Include="Logicraft\lib\websocket\tests\test_websocket.py" />

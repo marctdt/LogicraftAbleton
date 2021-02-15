@@ -29,7 +29,8 @@ class RunLogicraftAgent:
     def terminate(self): 
         self._running = False
     def run(self):
-        os.system('"C:/ProgramData/Ableton/Live 11 Beta/Resources/MIDI Remote Scripts/Logicraft/LogicraftAgent/LogicraftAbleton.bat"')
+        logicraftAgentPath = 'start /b "" "' + os.path.dirname(__file__) + "\LogicraftAgent\LogicraftAbleton.exe" + '"'
+        os.system(logicraftAgentPath)
 
 
 class Logicraft(ControlSurface):

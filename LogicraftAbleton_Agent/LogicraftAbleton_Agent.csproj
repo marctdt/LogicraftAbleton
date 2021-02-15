@@ -116,9 +116,6 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Content Include="LogicraftAbleton.bat">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <None Include="LogicraftAbleton_TemporaryKey.pfx" />
     <None Include="Logishrd\41704de9-fa75-4b77-ba44-665bc9a2f8aa\Languages\en.json" />
     <None Include="Logishrd\41704de9-fa75-4b77-ba44-665bc9a2f8aa\Manifest\defaults.json" />
