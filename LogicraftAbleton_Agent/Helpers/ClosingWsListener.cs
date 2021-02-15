@@ -23,9 +23,9 @@ namespace LogicraftAbleton.Helpers
 		public event EventHandler CloseRequested;
 		protected override void OnOpen()
 		{
-			base.OnOpen();
-			this.Sessions.Sessions.ToList().ForEach(x=>this.Sessions.CloseSession(x.ID));
 			CloseRequested?.Invoke(this, null);
+			this.Sessions.Sessions.ToList().ForEach(x=>this.Sessions.CloseSession(x.ID));
+			base.OnOpen();
 		}
 	}
 }
