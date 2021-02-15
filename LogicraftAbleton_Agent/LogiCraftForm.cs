@@ -599,12 +599,17 @@ namespace LogicraftAbleton
 				{
 					case Keys.OemQuotes when args.Modifiers == (Keys.Alt | Keys.Shift):
 						ToolChange(CrownModEnum.TabControl);
-						break;
+						goto default;
 					case Keys.Oemcomma when args.Modifiers == (Keys.Alt | Keys.Shift):
+						args.SuppressKeyPress = true;
 						ToolChange(CrownModEnum.NumericUpDown);
-						break;
+						goto default;
 					case Keys.OemPeriod when args.Modifiers == (Keys.Alt | Keys.Shift):
+						args.SuppressKeyPress = true;
 						ToolChange(CrownModEnum.TextBox);
+						goto default;
+					default:
+						args.SuppressKeyPress = true;
 						break;
 				}
 			};
