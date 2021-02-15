@@ -177,13 +177,13 @@ namespace LogicraftAbleton
 									_countTapForDoubleTap++;
 								if (_countTapForDoubleTap == 2)
 									OnOnDoubleTap();
-								_timer = new Timer(_holdModeTimerDuration) {Enabled = true};
+								_timer = new Timer(_holdModeTimerDuration) { Enabled = true };
 								_timer.Start();
 								//_timer.Elapsed += (sender, args) => ToolChange(_currentTool == "TabControl" ? "ProgressBar" : "TabControl");
 								_timer.Elapsed += (sender, args) =>
 								{
 									if (_currentTool == CrownModEnum.TabControl ||
-									    _currentTool == CrownModEnum.ProgressBar)
+										_currentTool == CrownModEnum.ProgressBar)
 										if (_isHoldModeEnabled)
 											ToolChange(_currentTool == CrownModEnum.TabControl
 												? CrownModEnum.ProgressBar
@@ -209,7 +209,7 @@ namespace LogicraftAbleton
 							{
 								// received a crown turn event from Craft crown
 								Trace.Write("++ crown ratchet delta :" + crownRootObject.ratchet_delta +
-								            " slot delta = " + crownRootObject.delta + "\n");
+											" slot delta = " + crownRootObject.delta + "\n");
 
 
 								Enum.TryParse(crownRootObject.task_options.current_tool, true,
@@ -219,7 +219,8 @@ namespace LogicraftAbleton
 									case CrownModEnum.TabControl:
 										var command = JsonConvert.SerializeObject(new AbletonCommand
 										{
-											command = "scroll", direction = crownRootObject.ratchet_delta > 0 ? 1 : 0
+											command = "scroll",
+											direction = crownRootObject.ratchet_delta > 0 ? 1 : 0
 										});
 										//WritelineInLogTextbox($"Send to ableton: {command}");
 										WritelineInLogTextbox("send midi to BMT 1 with Ratchet");
@@ -248,9 +249,9 @@ namespace LogicraftAbleton
 											? Convert.ToInt32(
 												Math.Ceiling(crownRootObject.delta / _factorBrowseNoRatchet))
 											: -Convert.ToInt32(Math.Ceiling(Math.Abs(crownRootObject.delta) /
-											                                _factorBrowseNoRatchet));
+																			_factorBrowseNoRatchet));
 										_bmt1Output.Send(
-											new byte[] {MidiEvent.CC, 0x00, CalcMidiOffsetFromCenter(deltaRounded)}, 0,
+											new byte[] { MidiEvent.CC, 0x00, CalcMidiOffsetFromCenter(deltaRounded) }, 0,
 											2, 0);
 
 										if (!_isHoldModeEnabled)
@@ -274,7 +275,7 @@ namespace LogicraftAbleton
 										var deltaWheel = crownRootObject.delta > 0
 											? Convert.ToInt32(Math.Ceiling(crownRootObject.delta * _wheelSimFactor))
 											: -Convert.ToInt32(Math.Ceiling(Math.Abs(crownRootObject.delta) *
-											                                _wheelSimFactor));
+																			_wheelSimFactor));
 
 										//WritelineInLogTextbox($"Mouse wheel {factorWheel} -- {deltaWheel}");
 										Scroll(deltaWheel);
@@ -286,7 +287,7 @@ namespace LogicraftAbleton
 											? Convert.ToInt32(
 												Math.Ceiling(crownRootObject.delta / _factorBrowseNoRatchet))
 											: -Convert.ToInt32(Math.Ceiling(Math.Abs(crownRootObject.delta) /
-											                                _factorBrowseNoRatchet));
+																			_factorBrowseNoRatchet));
 
 										var deltaResult = _isKeyboardModeRatchetEnabled
 											? crownRootObject.ratchet_delta
@@ -578,7 +579,7 @@ namespace LogicraftAbleton
 				? _currentTool + 1
 				: CrownModEnum.ProgressBar + 1;
 
-			if ((int) nextTool >= crowModCount)
+			if ((int)nextTool >= crowModCount)
 				nextTool = 0;
 			return nextTool;
 		}
@@ -612,7 +613,7 @@ namespace LogicraftAbleton
 				message_type = "tool_update",
 				session_id = _sessionId,
 				show_overlay = "true",
-				tool_options = new List<ToolOption> {new ToolOption {name = toolOption, value = value}}
+				tool_options = new List<ToolOption> { new ToolOption { name = toolOption, value = value } }
 			};
 
 			var s = JsonConvert.SerializeObject(toolUpdateRootObject);
@@ -675,7 +676,7 @@ namespace LogicraftAbleton
 
 		private void InitDetectDoubleTap()
 		{
-			_timerDoubleTap = new Timer(_doubleTapTimerDuration) {Enabled = true};
+			_timerDoubleTap = new Timer(_doubleTapTimerDuration) { Enabled = true };
 			_timerDoubleTap.Elapsed += (sender, args) =>
 			{
 				WritelineInLogTextbox("End of Double tap timer");
@@ -744,7 +745,7 @@ namespace LogicraftAbleton
 
 		private void LogicraftNotifyTray_Click(object sender, EventArgs e)
 		{
-			if (((MouseEventArgs) e).Button != MouseButtons.Left) return;
+			if (((MouseEventArgs)e).Button != MouseButtons.Left) return;
 			Show();
 			WindowState = FormWindowState.Normal;
 		}
@@ -769,8 +770,10 @@ namespace LogicraftAbleton
 
 		private void LogicraftForm_Resize(object sender, EventArgs e)
 		{
+			BringToFront();
 			if (WindowState == FormWindowState.Minimized)
 				MinimizeWindow();
+
 		}
 	}
 }
