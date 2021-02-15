@@ -4,9 +4,9 @@ using System.Configuration;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows.Forms;
 using WindowsInput;
 using WindowsInput.Native;
@@ -17,38 +17,93 @@ using Newtonsoft.Json;
 using WebSocketSharp;
 using Timer = System.Timers.Timer;
 
-
 namespace LogicraftAbleton
 {
 	public partial class LogicraftForm : Form
 	{
+		public enum CrownModEnum
+		{
+			TabControl,
+			ProgressBar,
+			NumericUpDown,
+			TextBox
+		}
+
 		private const int Mhousewheelunit = 120;
+
+		private const int CP_DISABLE_CLOSE_BUTTON = 0x200;
+		private readonly InputSimulator _inputSimulator = new InputSimulator();
+		private IMidiOutput _bmt1Output;
+
+		private WebSocket _client;
+		private int _countTapForDoubleTap;
+
+		private CrownModEnum _currentTool = CrownModEnum.TabControl;
+
+		private readonly double _doubleTapTimerDuration =
+			Convert.ToDouble(ConfigurationManager.AppSettings["DefaultDoubleTapTimerDuration"]);
+
+		private readonly double _factorBrowseNoRatchet =
+			Convert.ToDouble(ConfigurationManager.AppSettings["DefaultFactorBrowseNoRatchet"]);
+
+		private int _holdModeTimerDuration =
+			Convert.ToInt32(ConfigurationManager.AppSettings["DefaultHoldModeTimerDuration"]);
+
+		private readonly string _host = "ws://localhost:10134";
+		private bool _isHoldModeEnabled = Convert.ToBoolean(ConfigurationManager.AppSettings["DefaultEnableHoldMode"]);
+
+		private bool _isKeyboardModeRatchetEnabled =
+			Convert.ToBoolean(ConfigurationManager.AppSettings["DefaultIsKeyboardModeRatchetEnabled"]);
+
+		private bool _isLogEnabled = Convert.ToBoolean(ConfigurationManager.AppSettings["DefaultEnableLogging"]);
 		private string _sessionId = "";
+
+		private readonly int _slowSpeedThresholdNoRatchet =
+			Convert.ToInt32(ConfigurationManager.AppSettings["DefaultSlowSpeedThresholdNoRatchet"]);
+
+		private Timer _timer;
+		private Timer _timerDoubleTap;
+
+		private readonly int _turnSpeedInterval =
+			Convert.ToInt32(ConfigurationManager.AppSettings["DefaultTurnSpeedInterval"]);
+
+		private int _turnSpeedNoRatchet;
+
+		private int _turnSpeedRatchet;
+
+		private int _turnSpeedThresholdNoRatchet =
+			Convert.ToInt32(ConfigurationManager.AppSettings["DefaultTurnSpeedThresholdNoRatchet"]);
+
+		private readonly int _turnSpeedThresholdRatchet =
+			Convert.ToInt32(ConfigurationManager.AppSettings["DefaultTurnSpeedThresholdRatchet"]);
+
+		private Timer _turnSpeedTimer;
+		private double _wheelSimFactor = Convert.ToDouble(ConfigurationManager.AppSettings["DefaultWheelSimFactor"]);
+
+		public LogicraftForm()
+		{
+			InitializeComponent();
+
+			Init();
+		}
+
+		protected override CreateParams CreateParams
+		{
+			get
+			{
+				var cp = base.CreateParams;
+				cp.ClassStyle = cp.ClassStyle | CP_DISABLE_CLOSE_BUTTON;
+				return cp;
+			}
+		}
+
+		private bool IsDetectTimerEnabled => _turnSpeedTimer != null && _turnSpeedTimer.Enabled;
 
 		[DllImport("kernel32.dll")]
 		public static extern bool ProcessIdToSessionId(uint dwProcessID, int pSessionID);
 
 		[DllImport("Kernel32.dll", EntryPoint = "WTSGetActiveConsoleSessionId")]
 		public static extern int WTSGetActiveConsoleSessionId();
-
-		private WebSocket _client;
-		private IMidiOutput _bmt1Output;
-		private string _host = "ws://localhost:10134";
-		private int _countTapForDoubleTap = 0;
-		private bool _isLogEnabled = Convert.ToBoolean(ConfigurationManager.AppSettings["DefaultEnableLogging"]);
-		private bool _isHoldModeEnabled = Convert.ToBoolean(ConfigurationManager.AppSettings["DefaultEnableHoldMode"]);
-		private int _holdModeTimerDuration = Convert.ToInt32(ConfigurationManager.AppSettings["DefaultHoldModeTimerDuration"]);
-		private double _wheelSimFactor = Convert.ToDouble(ConfigurationManager.AppSettings["DefaultWheelSimFactor"]);
-		private double _factorBrowseNoRatchet = Convert.ToDouble(ConfigurationManager.AppSettings["DefaultFactorBrowseNoRatchet"]);
-		private double _doubleTapTimerDuration = Convert.ToDouble(ConfigurationManager.AppSettings["DefaultDoubleTapTimerDuration"]);
-
-		private Timer _turnSpeedTimer;
-		private int _turnSpeedThresholdNoRatchet = Convert.ToInt32(ConfigurationManager.AppSettings["DefaultTurnSpeedThresholdNoRatchet"]);
-		private int _turnSpeedThresholdRatchet = Convert.ToInt32(ConfigurationManager.AppSettings["DefaultTurnSpeedThresholdRatchet"]);
-		private bool _isKeyboardModeRatchetEnabled = Convert.ToBoolean(ConfigurationManager.AppSettings["DefaultIsKeyboardModeRatchetEnabled"]);
-
-		private int _turnSpeedRatchet = 0;
-		private int _turnSpeedNoRatchet = 0;
 		//private List<CrownRootObject> _crownObjectList = new List<CrownRootObject>();
 
 		public event EventHandler OnFastSpeedThresholdReached;
@@ -70,11 +125,10 @@ namespace LogicraftAbleton
 				_client.Send(s);
 				WritelineInLogTextbox("send tool change message: " + s);
 				_currentTool = contextName;
-
 			}
 			catch (Exception ex)
 			{
-				string err = ex.Message;
+				var err = ex.Message;
 				WritelineInLogTextbox(ex.StackTrace);
 				MessageBox.Show(err);
 			}
@@ -83,7 +137,11 @@ namespace LogicraftAbleton
 
 		[DllImport("user32.dll")]
 		public static extern void mouse_event(int dwFlags, int dx, int dy, int dwData, int dwExtraInfo);
-		public new void Scroll(int data) => mouse_event(0x0800, 0, 0, data, 0);
+
+		public new void Scroll(int data)
+		{
+			mouse_event(0x0800, 0, 0, data, 0);
+		}
 
 		private byte CalcMidiOffsetFromCenter(int value)
 		{
@@ -91,9 +149,7 @@ namespace LogicraftAbleton
 			var result = center + value;
 			return Convert.ToByte(result);
 		}
-		private readonly InputSimulator _inputSimulator = new InputSimulator();
 
-		private CrownModEnum _currentTool = CrownModEnum.TabControl;
 		public void UpdateUiWithDeserializedData(CrownRootObject crownRootObject)
 		{
 			switch (crownRootObject.message_type)
@@ -117,18 +173,21 @@ namespace LogicraftAbleton
 							{
 								if (_countTapForDoubleTap == 0)
 									InitDetectDoubleTap();
-								if (_timerDoubleTap != null && _timerDoubleTap.Enabled == true)
+								if (_timerDoubleTap != null && _timerDoubleTap.Enabled)
 									_countTapForDoubleTap++;
 								if (_countTapForDoubleTap == 2)
 									OnOnDoubleTap();
-								_timer = new System.Timers.Timer(_holdModeTimerDuration) { Enabled = true };
+								_timer = new Timer(_holdModeTimerDuration) {Enabled = true};
 								_timer.Start();
 								//_timer.Elapsed += (sender, args) => ToolChange(_currentTool == "TabControl" ? "ProgressBar" : "TabControl");
 								_timer.Elapsed += (sender, args) =>
 								{
-									if (_currentTool == CrownModEnum.TabControl || _currentTool == CrownModEnum.ProgressBar)
+									if (_currentTool == CrownModEnum.TabControl ||
+									    _currentTool == CrownModEnum.ProgressBar)
 										if (_isHoldModeEnabled)
-											ToolChange(_currentTool == CrownModEnum.TabControl ? CrownModEnum.ProgressBar : CrownModEnum.TabControl);
+											ToolChange(_currentTool == CrownModEnum.TabControl
+												? CrownModEnum.ProgressBar
+												: CrownModEnum.TabControl);
 										else
 											ToolChange(CrownModEnum.ProgressBar);
 									_timer.Stop();
@@ -143,41 +202,56 @@ namespace LogicraftAbleton
 										ToolChange(CrownModEnum.TabControl);
 								RestoreDetectTurnSpeed();
 							}
-
 						}
 						else
 						{
 							if (crownRootObject.message_type == "crown_turn_event")
 							{
 								// received a crown turn event from Craft crown
-								Trace.Write("++ crown ratchet delta :" + crownRootObject.ratchet_delta + " slot delta = " + crownRootObject.delta + "\n");
+								Trace.Write("++ crown ratchet delta :" + crownRootObject.ratchet_delta +
+								            " slot delta = " + crownRootObject.delta + "\n");
 
 
-								Enum.TryParse(crownRootObject.task_options.current_tool, true, out CrownModEnum currentTool);
+								Enum.TryParse(crownRootObject.task_options.current_tool, true,
+									out CrownModEnum currentTool);
 								switch (currentTool)
 								{
 									case CrownModEnum.TabControl:
-										var command = JsonConvert.SerializeObject(new AbletonCommand() { command = "scroll", direction = crownRootObject.ratchet_delta > 0 ? 1 : 0 });
+										var command = JsonConvert.SerializeObject(new AbletonCommand
+										{
+											command = "scroll", direction = crownRootObject.ratchet_delta > 0 ? 1 : 0
+										});
 										//WritelineInLogTextbox($"Send to ableton: {command}");
-										WritelineInLogTextbox($"send midi to BMT 1 with Ratchet");
-										_bmt1Output.Send(new byte[] { MidiEvent.CC, 0x00, CalcMidiOffsetFromCenter(crownRootObject.ratchet_delta) }, 0, 2, 0);
+										WritelineInLogTextbox("send midi to BMT 1 with Ratchet");
+										_bmt1Output.Send(
+											new byte[]
+											{
+												MidiEvent.CC, 0x00,
+												CalcMidiOffsetFromCenter(crownRootObject.ratchet_delta)
+											}, 0, 2, 0);
 										if (!_isHoldModeEnabled)
 										{
 											if (!IsDetectTimerEnabled)
 												InitDetectTurnSpeed();
 											_turnSpeedRatchet += crownRootObject.ratchet_delta;
 											_turnSpeedNoRatchet += crownRootObject.delta;
-										};
+										}
+
+										;
 
 										break;
 
 									case CrownModEnum.ProgressBar:
-										WritelineInLogTextbox($"send midi to BMT 1 without Ratchet");
+										WritelineInLogTextbox("send midi to BMT 1 without Ratchet");
 										var deltaRounded = 0;
 										deltaRounded = crownRootObject.delta > 0
-											? Convert.ToInt32(Math.Ceiling(crownRootObject.delta / _factorBrowseNoRatchet))
-											: -Convert.ToInt32(Math.Ceiling(Math.Abs(crownRootObject.delta) / _factorBrowseNoRatchet));
-										_bmt1Output.Send(new byte[] { MidiEvent.CC, 0x00, CalcMidiOffsetFromCenter(deltaRounded) }, 0, 2, 0);
+											? Convert.ToInt32(
+												Math.Ceiling(crownRootObject.delta / _factorBrowseNoRatchet))
+											: -Convert.ToInt32(Math.Ceiling(Math.Abs(crownRootObject.delta) /
+											                                _factorBrowseNoRatchet));
+										_bmt1Output.Send(
+											new byte[] {MidiEvent.CC, 0x00, CalcMidiOffsetFromCenter(deltaRounded)}, 0,
+											2, 0);
 
 										if (!_isHoldModeEnabled)
 										{
@@ -185,7 +259,9 @@ namespace LogicraftAbleton
 												InitDetectTurnSpeed();
 											_turnSpeedRatchet += crownRootObject.ratchet_delta;
 											_turnSpeedNoRatchet += crownRootObject.delta;
-										};
+										}
+
+										;
 
 										break;
 									case CrownModEnum.NumericUpDown:
@@ -197,16 +273,20 @@ namespace LogicraftAbleton
 
 										var deltaWheel = crownRootObject.delta > 0
 											? Convert.ToInt32(Math.Ceiling(crownRootObject.delta * _wheelSimFactor))
-											: -Convert.ToInt32(Math.Ceiling(Math.Abs(crownRootObject.delta) * _wheelSimFactor));
+											: -Convert.ToInt32(Math.Ceiling(Math.Abs(crownRootObject.delta) *
+											                                _wheelSimFactor));
 
 										//WritelineInLogTextbox($"Mouse wheel {factorWheel} -- {deltaWheel}");
 										Scroll(deltaWheel);
 										break;
 									case CrownModEnum.TextBox:
-										Enum.TryParse(crownRootObject.task_options.current_tool_option, true, out TextBoxOptions currentTextBoxToolOption);
+										Enum.TryParse(crownRootObject.task_options.current_tool_option, true,
+											out TextBoxOptions currentTextBoxToolOption);
 										var deltaRoundedKeyboard = crownRootObject.delta > 0
-											? Convert.ToInt32(Math.Ceiling(crownRootObject.delta / _factorBrowseNoRatchet))
-											: -Convert.ToInt32(Math.Ceiling(Math.Abs(crownRootObject.delta) / _factorBrowseNoRatchet));
+											? Convert.ToInt32(
+												Math.Ceiling(crownRootObject.delta / _factorBrowseNoRatchet))
+											: -Convert.ToInt32(Math.Ceiling(Math.Abs(crownRootObject.delta) /
+											                                _factorBrowseNoRatchet));
 
 										var deltaResult = _isKeyboardModeRatchetEnabled
 											? crownRootObject.ratchet_delta
@@ -214,14 +294,16 @@ namespace LogicraftAbleton
 
 										if (deltaResult > 0)
 											for (var i = 0; i < deltaResult; i++)
-												_inputSimulator.Keyboard.KeyPress(currentTextBoxToolOption == TextBoxOptions.TextBoxHeight ? VirtualKeyCode.DOWN : VirtualKeyCode.RIGHT);
+												_inputSimulator.Keyboard.KeyPress(
+													currentTextBoxToolOption == TextBoxOptions.TextBoxHeight
+														? VirtualKeyCode.DOWN
+														: VirtualKeyCode.RIGHT);
 										else if (deltaResult < 0)
 											for (var i = 0; i < Math.Abs(deltaResult); i++)
-												_inputSimulator.Keyboard.KeyPress(currentTextBoxToolOption == TextBoxOptions.TextBoxHeight ? VirtualKeyCode.UP : VirtualKeyCode.LEFT);
-										break;
-
-
-									default:
+												_inputSimulator.Keyboard.KeyPress(
+													currentTextBoxToolOption == TextBoxOptions.TextBoxHeight
+														? VirtualKeyCode.UP
+														: VirtualKeyCode.LEFT);
 										break;
 								}
 							}
@@ -238,33 +320,26 @@ namespace LogicraftAbleton
 			}
 		}
 
-		private Timer _timer;
-		private Timer _timerDoubleTap;
-		private int _turnSpeedInterval = Convert.ToInt32(ConfigurationManager.AppSettings["DefaultTurnSpeedInterval"]);
-		private int _slowSpeedThresholdNoRatchet = Convert.ToInt32(ConfigurationManager.AppSettings["DefaultSlowSpeedThresholdNoRatchet"]);
-
 		public event EventHandler OnDoubleTap;
 
 		public void SetupUIRefreshTimer()
 		{
-
 			//System.Timers.Timer timer = new System.Timers.Timer(70);
 			//timer.Enabled = true;
 			//timer.Elapsed += new System.Timers.ElapsedEventHandler(timer_Elapsed);
 			//timer.Start();
 
 			// reconnection watch dog 
-			System.Timers.Timer reconnection_timer = new System.Timers.Timer(30000);
+			var reconnection_timer = new Timer(30000);
 			reconnection_timer.Enabled = true;
-			reconnection_timer.Elapsed += new System.Timers.ElapsedEventHandler(connection_watchdog_timer);
+			reconnection_timer.Elapsed += connection_watchdog_timer;
 		}
 
-		public void connection_watchdog_timer(object sender, System.Timers.ElapsedEventArgs e)
+		public void connection_watchdog_timer(object sender, ElapsedEventArgs e)
 		{
 			if (_client.IsAlive) return;
 			_client = null;
 			connectWithManager();
-
 		}
 
 
@@ -357,26 +432,24 @@ namespace LogicraftAbleton
 
 		public void openUI(string msg)
 		{
-			string str = msg;
+			var str = msg;
 			WritelineInLogTextbox(str);
 		}
 
 		public void closeConnection()
 		{
-
 		}
 
 
 		public void displayError(string msg)
 		{
-			string str = msg;
+			var str = msg;
 			WritelineInLogTextbox(str);
 		}
 
 
 		public async Task ConnectToAbletonAsync()
 		{
-
 			//_abletonClient = new WatsonWebsocket.WatsonWsClient("localhost", 9009, false);
 			//_abletonClient = new WebSocket("ws://localhost:9009");
 			//_abletonServer = new WatsonWsServer();
@@ -400,11 +473,10 @@ namespace LogicraftAbleton
 
 			try
 			{
-
 				var access = MidiAccessManager.Default;
 				_bmt1Output = await access.OpenOutputAsync(access.Outputs.First(x => x.Name == "BMT 1").Id);
 				//_bmt1Input = await access.OpenInputAsync(access.Inputs.First(x => x.Name == "BMT 1").Id);
-				WritelineInLogTextbox($"Connected to BMT 1");
+				WritelineInLogTextbox("Connected to BMT 1");
 			}
 			catch (Exception e)
 			{
@@ -417,12 +489,9 @@ namespace LogicraftAbleton
 		{
 			try
 			{
-				_client = new WebSocketSharp.WebSocket(_host);
+				_client = new WebSocket(_host);
 
-				_client.OnOpen += (ss, ee) =>
-				{
-					openUI(string.Format("Connected to {0} successfully", _host));
-				};
+				_client.OnOpen += (ss, ee) => { openUI(string.Format("Connected to {0} successfully", _host)); };
 				_client.OnError += (ss, ee) =>
 					displayError("Error: " + ee.Message);
 
@@ -432,7 +501,6 @@ namespace LogicraftAbleton
 					var crownRootObject = JsonConvert.DeserializeObject<CrownRootObject>(ee.Data);
 					UpdateUiWithDeserializedData(crownRootObject);
 					//wrapperUpdateUI(ee.Data);
-
 				};
 
 				_client.OnClose += (ss, ee) =>
@@ -441,20 +509,20 @@ namespace LogicraftAbleton
 				WritelineInLogTextbox("Connection " + _client);
 				_client.Connect();
 
-				Process abletonProcess = Process.GetProcessesByName("Ableton Live 11 Beta")[0];
+				var abletonProcess = Process.GetProcessesByName("Ableton Live 11 Beta")[0];
 
-				CrownRegisterRootObject registerRootObject = new CrownRegisterRootObject();
+				var registerRootObject = new CrownRegisterRootObject();
 				registerRootObject.message_type = "register";
 				registerRootObject.plugin_guid = "41704de9-fa75-4b77-ba44-665bc9a2f8aa";
 				registerRootObject.execName = "Ableton Live 11 Beta.exe";
 				registerRootObject.PID = Convert.ToInt32(abletonProcess.Id);
-				string s = JsonConvert.SerializeObject(registerRootObject);
+				var s = JsonConvert.SerializeObject(registerRootObject);
 
 
 				// only connect to active session process
 				registerRootObject.PID = Convert.ToInt32(abletonProcess.Id);
-				int activeConsoleSessionId = WTSGetActiveConsoleSessionId();
-				int currentProcessSessionId = Process.GetCurrentProcess().SessionId;
+				var activeConsoleSessionId = WTSGetActiveConsoleSessionId();
+				var currentProcessSessionId = Process.GetCurrentProcess().SessionId;
 
 				// if we are running in active session?
 				if (currentProcessSessionId == activeConsoleSessionId)
@@ -469,19 +537,10 @@ namespace LogicraftAbleton
 			}
 			catch (Exception ex)
 			{
-				string str = ex.Message;
+				var str = ex.Message;
 				WritelineInLogTextbox(ex.StackTrace);
 				MessageBox.Show("Ableton is not started yet");
 			}
-		}
-
-
-		public enum CrownModEnum
-		{
-			TabControl,
-			ProgressBar,
-			NumericUpDown,
-			TextBox
 		}
 
 		public async void Init()
@@ -497,20 +556,19 @@ namespace LogicraftAbleton
 
 
 				OnDoubleTap += (sender, args) => ToolChange(GetNextTool());
-				OnFastSpeedThresholdReached += (sender, args) => ToolChange((CrownModEnum.ProgressBar));
-				OnSlowSpeedThresholdReached += (sender, args) => ToolChange((CrownModEnum.TabControl));
+				OnFastSpeedThresholdReached += (sender, args) => ToolChange(CrownModEnum.ProgressBar);
+				OnSlowSpeedThresholdReached += (sender, args) => ToolChange(CrownModEnum.TabControl);
 				InitUi();
 				var closeListener = new ClosingWsListener();
 				closeListener.OnCloseRequest += exitToolStripMenuItem_Click;
 			}
 			catch (Exception ex)
 			{
-				string str = ex.Message;
+				var str = ex.Message;
 				WritelineInLogTextbox(ex.StackTrace);
 				MessageBox.Show(str);
-				exitToolStripMenuItem_Click(this,null);
+				exitToolStripMenuItem_Click(this, null);
 			}
-
 		}
 
 		private CrownModEnum GetNextTool()
@@ -520,10 +578,9 @@ namespace LogicraftAbleton
 				? _currentTool + 1
 				: CrownModEnum.ProgressBar + 1;
 
-			if ((int)nextTool >= crowModCount)
+			if ((int) nextTool >= crowModCount)
 				nextTool = 0;
 			return nextTool;
-
 		}
 
 		private void InitUi()
@@ -533,15 +590,7 @@ namespace LogicraftAbleton
 			CheckboxKeyboardRatchetEnabled.Checked = _isKeyboardModeRatchetEnabled;
 			TextboxTimerDuration.Text = _holdModeTimerDuration.ToString();
 			TextboxWheelFactor.Text = _wheelSimFactor.ToString(CultureInfo.InvariantCulture);
-			WindowState = FormWindowState.Minimized;
-		}
-
-		public LogicraftForm()
-		{
-			InitializeComponent();
-
-			Init();
-
+			MinimizeWindow();
 		}
 
 		//for reference
@@ -557,19 +606,21 @@ namespace LogicraftAbleton
 
 		public void ReportToolOptionDataValueChange(string tool, string toolOption, string value)
 		{
-			ToolUpdateRootObject toolUpdateRootObject = new ToolUpdateRootObject
+			var toolUpdateRootObject = new ToolUpdateRootObject
 			{
 				tool_id = tool,
 				message_type = "tool_update",
 				session_id = _sessionId,
 				show_overlay = "true",
-				tool_options = new List<ToolOption> { new ToolOption { name = toolOption, value = value } }
+				tool_options = new List<ToolOption> {new ToolOption {name = toolOption, value = value}}
 			};
 
-			string s = JsonConvert.SerializeObject(toolUpdateRootObject);
+			var s = JsonConvert.SerializeObject(toolUpdateRootObject);
 			_client.Send(s);
 
-			Trace.TraceInformation("MyWebSocket.ReportToolOptionDataValueChange - Tool:{0}, Tool option:{1}, Value:{2} ", tool, toolOption, value);
+			Trace.TraceInformation(
+				"MyWebSocket.ReportToolOptionDataValueChange - Tool:{0}, Tool option:{1}, Value:{2} ", tool, toolOption,
+				value);
 		}
 
 		public void WritelineInLogTextbox(string text)
@@ -579,15 +630,25 @@ namespace LogicraftAbleton
 			logBox.ScrollToCaret();
 		}
 
-		private void CheckboxLogging_CheckedChanged(object sender, EventArgs e) => _isLogEnabled = CheckboxLogging.Checked;
+		private void CheckboxLogging_CheckedChanged(object sender, EventArgs e)
+		{
+			_isLogEnabled = CheckboxLogging.Checked;
+		}
 
-		private void ButtonReconnect_Click(object sender, EventArgs e) => Init();
+		private void ButtonReconnect_Click(object sender, EventArgs e)
+		{
+			Init();
+		}
 
-		private void CheckboxHoldMode_CheckedChanged(object sender, EventArgs e) => _isHoldModeEnabled = CheckboxHoldMode.Checked;
+		private void CheckboxHoldMode_CheckedChanged(object sender, EventArgs e)
+		{
+			_isHoldModeEnabled = CheckboxHoldMode.Checked;
+		}
 
-		private void TextboxTimerDuration_TextChanged(object sender, EventArgs e) => _holdModeTimerDuration = Convert.ToInt32(TextboxTimerDuration.Text);
-
-		private bool IsDetectTimerEnabled => _turnSpeedTimer != null && _turnSpeedTimer.Enabled;
+		private void TextboxTimerDuration_TextChanged(object sender, EventArgs e)
+		{
+			_holdModeTimerDuration = Convert.ToInt32(TextboxTimerDuration.Text);
+		}
 
 		private void InitDetectTurnSpeed()
 		{
@@ -610,20 +671,19 @@ namespace LogicraftAbleton
 			_turnSpeedTimer?.Stop();
 			_turnSpeedTimer?.Close();
 			_turnSpeedTimer?.Dispose();
-
 		}
 
 		private void InitDetectDoubleTap()
 		{
-			_timerDoubleTap = new Timer(_doubleTapTimerDuration) { Enabled = true };
+			_timerDoubleTap = new Timer(_doubleTapTimerDuration) {Enabled = true};
 			_timerDoubleTap.Elapsed += (sender, args) =>
-			 {
-				 WritelineInLogTextbox("End of Double tap timer");
-				 _countTapForDoubleTap = 0;
-				 _timerDoubleTap.Stop();
-				 _timerDoubleTap.Close();
-				 _timerDoubleTap.Dispose();
-			 };
+			{
+				WritelineInLogTextbox("End of Double tap timer");
+				_countTapForDoubleTap = 0;
+				_timerDoubleTap.Stop();
+				_timerDoubleTap.Close();
+				_timerDoubleTap.Dispose();
+			};
 			_timerDoubleTap.Start();
 		}
 
@@ -666,54 +726,45 @@ namespace LogicraftAbleton
 			_isKeyboardModeRatchetEnabled = CheckboxKeyboardRatchetEnabled.Checked;
 		}
 
-		private void LogicraftForm_Resize(object sender, EventArgs e)
-		{
-			if (this.WindowState == FormWindowState.Minimized)
-			{
-				Hide();
-				LogicraftNotifyTray.Visible = true;
-			}
-		}
-
-		private void LogicraftNotifyTray_MouseDoubleClick(object sender, MouseEventArgs e)
-		{
-			Show();
-			this.WindowState = FormWindowState.Normal;
-			//LogicraftNotifyTray.Visible = false;
-		}
-
 		private void exitToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			LogicraftNotifyTray.Visible = false;
-			if (System.Windows.Forms.Application.MessageLoop)
-			{
+			if (Application.MessageLoop)
 				// WinForms app
-				System.Windows.Forms.Application.Exit();
-			}
+				Application.Exit();
 			else
-			{
 				// Console app
-				System.Environment.Exit(1);
-			}
+				Environment.Exit(1);
 		}
 
 		private void LogicraftForm_Shown(object sender, EventArgs e)
 		{
-			Hide();
+			MinimizeWindow();
 		}
 
 		private void LogicraftNotifyTray_Click(object sender, EventArgs e)
 		{
-			if (((MouseEventArgs)e).Button != MouseButtons.Left) return;
-			var mi = typeof(NotifyIcon).GetMethod("ShowContextMenu",
-				BindingFlags.Instance | BindingFlags.NonPublic);
-			mi?.Invoke(LogicraftNotifyTray, null);
+			if (((MouseEventArgs) e).Button != MouseButtons.Left) return;
+			Show();
+			WindowState = FormWindowState.Normal;
 		}
 
 		private void showToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			LogicraftNotifyTray_MouseDoubleClick(sender, null);
+			LogicraftNotifyTray_Click(sender, null);
+		}
+
+		private void LogicraftNotifyTray_MouseDoubleClick(object sender, MouseEventArgs e)
+		{
+			if (e.Button != MouseButtons.Left) return;
+			MinimizeWindow();
+		}
+
+		private void MinimizeWindow()
+		{
+			WindowState = FormWindowState.Minimized;
+			LogicraftNotifyTray.Visible = true;
+			Hide();
 		}
 	}
-
 }

@@ -1,9 +1,13 @@
-﻿using System;
-
-namespace LogicraftAbleton.Model
+﻿namespace LogicraftAbleton.Model
 {
 	public class CrownRootObject
 	{
+		public enum TouchStateEnum
+		{
+			Release,
+			Touch
+		}
+
 		public string message_type { get; set; }
 		public int device_id { get; set; }
 		public int unit_id { get; set; }
@@ -14,14 +18,7 @@ namespace LogicraftAbleton.Model
 		public TaskOptions task_options { get; set; }
 		public int delta { get; set; }
 		public int ratchet_delta { get; set; }
-		public Int64 time_stamp { get; set; }
+		public long time_stamp { get; set; }
 		public string state { get; set; }
-
-		public enum TouchStateEnum
-		{
-			Release,
-			Touch
-		}
 	}
-
 }

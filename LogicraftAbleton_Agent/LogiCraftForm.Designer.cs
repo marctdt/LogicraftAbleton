@@ -40,9 +40,9 @@
 			this.CheckboxKeyboardRatchetEnabled = new System.Windows.Forms.CheckBox();
 			this.LogicraftNotifyTray = new System.Windows.Forms.NotifyIcon(this.components);
 			this.LogicraftTrayContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.showToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.ButtonReconnect = new System.Windows.Forms.Button();
-			this.showToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.LogicraftTrayContextMenu.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -138,12 +138,19 @@
             this.showToolStripMenuItem,
             this.exitToolStripMenuItem});
 			this.LogicraftTrayContextMenu.Name = "LogicraftTrayContextMenu";
-			this.LogicraftTrayContextMenu.Size = new System.Drawing.Size(181, 70);
+			this.LogicraftTrayContextMenu.Size = new System.Drawing.Size(104, 48);
+			// 
+			// showToolStripMenuItem
+			// 
+			this.showToolStripMenuItem.Name = "showToolStripMenuItem";
+			this.showToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
+			this.showToolStripMenuItem.Text = "Show";
+			this.showToolStripMenuItem.Click += new System.EventHandler(this.showToolStripMenuItem_Click);
 			// 
 			// exitToolStripMenuItem
 			// 
 			this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-			this.exitToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.exitToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
 			this.exitToolStripMenuItem.Text = "Exit";
 			this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
 			// 
@@ -157,13 +164,6 @@
 			this.ButtonReconnect.UseVisualStyleBackColor = true;
 			this.ButtonReconnect.Visible = false;
 			this.ButtonReconnect.Click += new System.EventHandler(this.ButtonReconnect_Click);
-			// 
-			// showToolStripMenuItem
-			// 
-			this.showToolStripMenuItem.Name = "showToolStripMenuItem";
-			this.showToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-			this.showToolStripMenuItem.Text = "Show";
-			this.showToolStripMenuItem.Click += new System.EventHandler(this.showToolStripMenuItem_Click);
 			// 
 			// LogicraftForm
 			// 
@@ -184,7 +184,6 @@
 			this.Name = "LogicraftForm";
 			this.Text = "Logicraft for Ableton";
 			this.Shown += new System.EventHandler(this.LogicraftForm_Shown);
-			this.Resize += new System.EventHandler(this.LogicraftForm_Resize);
 			this.LogicraftTrayContextMenu.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();

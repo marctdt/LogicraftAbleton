@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using WebSocketSharp.Server;
 
 namespace LogicraftAbleton.Helpers
@@ -10,22 +9,15 @@ namespace LogicraftAbleton.Helpers
 
 		public ClosingWsListener()
 		{
-			void ClosingBehavior(ClosingWsBehavior wsService) => wsService.CloseRequested += (sender, args) => OnCloseRequest?.Invoke(this, null);
-			_webSocketServerListener.AddWebSocketService<ClosingWsBehavior>("/close",ClosingBehavior);
+			void ClosingBehavior(ClosingWsBehavior wsService)
+			{
+				wsService.CloseRequested += (sender, args) => OnCloseRequest?.Invoke(this, null);
+			}
+
+			_webSocketServerListener.AddWebSocketService<ClosingWsBehavior>("/close", ClosingBehavior);
 			_webSocketServerListener.Start();
 		}
 
 		public event EventHandler OnCloseRequest;
-	}
-
-	public class ClosingWsBehavior:WebSocketBehavior
-	{
-		public event EventHandler CloseRequested;
-		protected override void OnOpen()
-		{
-			CloseRequested?.Invoke(this, null);
-			this.Sessions.Sessions.ToList().ForEach(x=>this.Sessions.CloseSession(x.ID));
-			base.OnOpen();
-		}
 	}
 }

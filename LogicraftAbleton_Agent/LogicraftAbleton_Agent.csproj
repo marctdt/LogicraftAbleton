@@ -87,6 +87,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Helpers\ClosingWsBehavior.cs" />
     <Compile Include="Helpers\ClosingWsListener.cs" />
     <Compile Include="Model\AbletonCommand.cs" />
     <Compile Include="Model\CrownRegisterRootObject.cs" />
@@ -97,6 +98,7 @@
     <Compile Include="LogiCraftForm.Designer.cs">
       <DependentUpon>LogiCraftForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Model\TextBoxOptions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Model\TaskOptions.cs" />
