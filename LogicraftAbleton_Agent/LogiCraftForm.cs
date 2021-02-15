@@ -522,7 +522,6 @@ namespace LogicraftAbleton
 			TextboxWheelFactor.Text = _wheelSimFactor.ToString(CultureInfo.InvariantCulture);
 			WindowState = FormWindowState.Minimized;
 			Hide();
-			LogicraftForm_Resize();
 		}
 
 		public LogicraftForm()
