@@ -89,10 +89,10 @@ namespace LogicraftAbleton
 			var result = center + value;
 			return Convert.ToByte(result);
 		}
-		InputSimulator _inputSimulator = new InputSimulator();
+		private readonly InputSimulator _inputSimulator = new InputSimulator();
 
 		private CrownModEnum _currentTool = CrownModEnum.TabControl;
-		public void updateUIWithDeserializedData(CrownRootObject crownRootObject)
+		public void UpdateUiWithDeserializedData(CrownRootObject crownRootObject)
 		{
 			switch (crownRootObject.message_type)
 			{
@@ -115,9 +115,6 @@ namespace LogicraftAbleton
 							{
 								if (_countTapForDoubleTap == 0)
 									InitDetectDoubleTap();
-								_countTapForDoubleTap++;
-								if (_countTapForDoubleTap == 2)
-									OnOnDoubleTap();
 								_timer = new System.Timers.Timer(_holdModeTimerDuration) { Enabled = true };
 								_timer.Start();
 								//_timer.Elapsed += (sender, args) => ToolChange(_currentTool == "TabControl" ? "ProgressBar" : "TabControl");
@@ -135,6 +132,9 @@ namespace LogicraftAbleton
 							}
 							else
 							{
+								if (_countTapForDoubleTap == 2)
+									OnOnDoubleTap();
+								_countTapForDoubleTap++;
 								if (_currentTool == CrownModEnum.ProgressBar)
 									if (!_isHoldModeEnabled)
 										ToolChange(CrownModEnum.TabControl);
@@ -419,7 +419,7 @@ namespace LogicraftAbleton
 				{
 					WritelineInLogTextbox($"messag {ee.Data} end messag");
 					var crownRootObject = JsonConvert.DeserializeObject<CrownRootObject>(ee.Data);
-					updateUIWithDeserializedData(crownRootObject);
+					UpdateUiWithDeserializedData(crownRootObject);
 					//wrapperUpdateUI(ee.Data);
 
 				};
