@@ -766,5 +766,11 @@ namespace LogicraftAbleton
 			LogicraftNotifyTray.Visible = true;
 			Hide();
 		}
+
+		private void LogicraftForm_Resize(object sender, EventArgs e)
+		{
+			if (WindowState == FormWindowState.Minimized)
+				MinimizeWindow();
+		}
 	}
 }

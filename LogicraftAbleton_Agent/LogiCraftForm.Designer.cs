@@ -184,6 +184,7 @@
 			this.Name = "LogicraftForm";
 			this.Text = "Logicraft for Ableton";
 			this.Shown += new System.EventHandler(this.LogicraftForm_Shown);
+			this.Resize += new System.EventHandler(this.LogicraftForm_Resize);
 			this.LogicraftTrayContextMenu.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();
