@@ -146,7 +146,7 @@
 			this.LogicraftTrayContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.exitToolStripMenuItem});
 			this.LogicraftTrayContextMenu.Name = "LogicraftTrayContextMenu";
-			this.LogicraftTrayContextMenu.Size = new System.Drawing.Size(181, 48);
+			this.LogicraftTrayContextMenu.Size = new System.Drawing.Size(94, 26);
 			// 
 			// exitToolStripMenuItem
 			// 
@@ -173,6 +173,7 @@
 			this.Margin = new System.Windows.Forms.Padding(2);
 			this.Name = "LogicraftForm";
 			this.Text = "Logicraft for Ableton";
+			this.Shown += new System.EventHandler(this.LogicraftForm_Shown);
 			this.Resize += new System.EventHandler(this.LogicraftForm_Resize);
 			this.LogicraftTrayContextMenu.ResumeLayout(false);
 			this.ResumeLayout(false);
