@@ -41,6 +41,7 @@
 			this.LogicraftNotifyTray = new System.Windows.Forms.NotifyIcon(this.components);
 			this.LogicraftTrayContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.showToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.hideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.ButtonReconnect = new System.Windows.Forms.Button();
 			this.LogicraftTrayContextMenu.SuspendLayout();
@@ -129,28 +130,35 @@
 			this.LogicraftNotifyTray.Icon = ((System.Drawing.Icon)(resources.GetObject("LogicraftNotifyTray.Icon")));
 			this.LogicraftNotifyTray.Text = "Logicraft for Ableton";
 			this.LogicraftNotifyTray.Visible = true;
-			this.LogicraftNotifyTray.Click += new System.EventHandler(this.LogicraftNotifyTray_Click);
-			this.LogicraftNotifyTray.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.LogicraftNotifyTray_MouseDoubleClick);
+			this.LogicraftNotifyTray.MouseClick += new System.Windows.Forms.MouseEventHandler(this.LogicraftNotifyTray_MouseClick);
 			// 
 			// LogicraftTrayContextMenu
 			// 
 			this.LogicraftTrayContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.showToolStripMenuItem,
+            this.hideToolStripMenuItem,
             this.exitToolStripMenuItem});
 			this.LogicraftTrayContextMenu.Name = "LogicraftTrayContextMenu";
-			this.LogicraftTrayContextMenu.Size = new System.Drawing.Size(104, 48);
+			this.LogicraftTrayContextMenu.Size = new System.Drawing.Size(181, 92);
 			// 
 			// showToolStripMenuItem
 			// 
 			this.showToolStripMenuItem.Name = "showToolStripMenuItem";
-			this.showToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
+			this.showToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.showToolStripMenuItem.Text = "Show";
 			this.showToolStripMenuItem.Click += new System.EventHandler(this.showToolStripMenuItem_Click);
+			// 
+			// hideToolStripMenuItem
+			// 
+			this.hideToolStripMenuItem.Name = "hideToolStripMenuItem";
+			this.hideToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.hideToolStripMenuItem.Text = "Hide";
+			this.hideToolStripMenuItem.Click += new System.EventHandler(this.hideToolStripMenuItem_Click);
 			// 
 			// exitToolStripMenuItem
 			// 
 			this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-			this.exitToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
+			this.exitToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.exitToolStripMenuItem.Text = "Exit";
 			this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
 			// 
@@ -181,6 +189,7 @@
 			this.Controls.Add(this.logBox);
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.Margin = new System.Windows.Forms.Padding(2);
+			this.MaximizeBox = false;
 			this.Name = "LogicraftForm";
 			this.Text = "Logicraft for Ableton";
 			this.Shown += new System.EventHandler(this.LogicraftForm_Shown);
@@ -206,5 +215,6 @@
 		private System.Windows.Forms.ContextMenuStrip LogicraftTrayContextMenu;
 		private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem showToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem hideToolStripMenuItem;
 	}
 }

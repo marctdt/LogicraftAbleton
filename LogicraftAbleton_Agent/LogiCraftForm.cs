@@ -743,37 +743,42 @@ namespace LogicraftAbleton
 			MinimizeWindow();
 		}
 
-		private void LogicraftNotifyTray_Click(object sender, EventArgs e)
-		{
-			if (((MouseEventArgs)e).Button != MouseButtons.Left) return;
-			Show();
-			WindowState = FormWindowState.Normal;
-		}
-
-		private void showToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-			LogicraftNotifyTray_Click(sender, null);
-		}
-
-		private void LogicraftNotifyTray_MouseDoubleClick(object sender, MouseEventArgs e)
-		{
-			if (e.Button != MouseButtons.Left) return;
-			MinimizeWindow();
-		}
 
 		private void MinimizeWindow()
 		{
 			WindowState = FormWindowState.Minimized;
-			LogicraftNotifyTray.Visible = true;
 			Hide();
+		}
+
+		private void RestoreWindow()
+		{
+			Show();
+			WindowState = FormWindowState.Normal;
+			BringToFront();
+			Activate();
+			TopMost = true;
 		}
 
 		private void LogicraftForm_Resize(object sender, EventArgs e)
 		{
-			BringToFront();
 			if (WindowState == FormWindowState.Minimized)
 				MinimizeWindow();
+		}
 
+		private void hideToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			MinimizeWindow();
+		}
+
+		private void LogicraftNotifyTray_MouseClick(object sender, MouseEventArgs e)
+		{
+			if (e.Button != MouseButtons.Left) return;
+			RestoreWindow();
+		}
+
+		private void showToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			RestoreWindow();
 		}
 	}
 }
