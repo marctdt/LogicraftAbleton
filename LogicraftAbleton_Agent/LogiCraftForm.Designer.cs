@@ -44,6 +44,8 @@
 			this.hideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.ButtonReconnect = new System.Windows.Forms.Button();
+			this.CheckboxDoubleTapEnabled = new System.Windows.Forms.CheckBox();
+			this.CheckboxShortcutEnabled = new System.Windows.Forms.CheckBox();
 			this.LogicraftTrayContextMenu.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -79,7 +81,7 @@
 			// 
 			// TextboxTimerDuration
 			// 
-			this.TextboxTimerDuration.Location = new System.Drawing.Point(717, 74);
+			this.TextboxTimerDuration.Location = new System.Drawing.Point(721, 170);
 			this.TextboxTimerDuration.Name = "TextboxTimerDuration";
 			this.TextboxTimerDuration.Size = new System.Drawing.Size(51, 20);
 			this.TextboxTimerDuration.TabIndex = 5;
@@ -89,7 +91,7 @@
 			// label1
 			// 
 			this.label1.AutoSize = true;
-			this.label1.Location = new System.Drawing.Point(625, 77);
+			this.label1.Location = new System.Drawing.Point(629, 173);
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(76, 13);
 			this.label1.TabIndex = 6;
@@ -97,7 +99,7 @@
 			// 
 			// TextboxWheelFactor
 			// 
-			this.TextboxWheelFactor.Location = new System.Drawing.Point(717, 101);
+			this.TextboxWheelFactor.Location = new System.Drawing.Point(721, 197);
 			this.TextboxWheelFactor.Name = "TextboxWheelFactor";
 			this.TextboxWheelFactor.Size = new System.Drawing.Size(51, 20);
 			this.TextboxWheelFactor.TabIndex = 7;
@@ -107,7 +109,7 @@
 			// label2
 			// 
 			this.label2.AutoSize = true;
-			this.label2.Location = new System.Drawing.Point(625, 104);
+			this.label2.Location = new System.Drawing.Point(629, 200);
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(91, 13);
 			this.label2.TabIndex = 8;
@@ -139,32 +141,32 @@
             this.hideToolStripMenuItem,
             this.exitToolStripMenuItem});
 			this.LogicraftTrayContextMenu.Name = "LogicraftTrayContextMenu";
-			this.LogicraftTrayContextMenu.Size = new System.Drawing.Size(181, 92);
+			this.LogicraftTrayContextMenu.Size = new System.Drawing.Size(104, 70);
 			// 
 			// showToolStripMenuItem
 			// 
 			this.showToolStripMenuItem.Name = "showToolStripMenuItem";
-			this.showToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.showToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
 			this.showToolStripMenuItem.Text = "Show";
 			this.showToolStripMenuItem.Click += new System.EventHandler(this.showToolStripMenuItem_Click);
 			// 
 			// hideToolStripMenuItem
 			// 
 			this.hideToolStripMenuItem.Name = "hideToolStripMenuItem";
-			this.hideToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.hideToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
 			this.hideToolStripMenuItem.Text = "Hide";
 			this.hideToolStripMenuItem.Click += new System.EventHandler(this.hideToolStripMenuItem_Click);
 			// 
 			// exitToolStripMenuItem
 			// 
 			this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-			this.exitToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.exitToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
 			this.exitToolStripMenuItem.Text = "Exit";
 			this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
 			// 
 			// ButtonReconnect
 			// 
-			this.ButtonReconnect.Location = new System.Drawing.Point(636, 125);
+			this.ButtonReconnect.Location = new System.Drawing.Point(640, 221);
 			this.ButtonReconnect.Name = "ButtonReconnect";
 			this.ButtonReconnect.Size = new System.Drawing.Size(75, 23);
 			this.ButtonReconnect.TabIndex = 3;
@@ -173,11 +175,33 @@
 			this.ButtonReconnect.Visible = false;
 			this.ButtonReconnect.Click += new System.EventHandler(this.ButtonReconnect_Click);
 			// 
+			// CheckboxDoubleTapEnabled
+			// 
+			this.CheckboxDoubleTapEnabled.AutoSize = true;
+			this.CheckboxDoubleTapEnabled.Location = new System.Drawing.Point(625, 79);
+			this.CheckboxDoubleTapEnabled.Name = "CheckboxDoubleTapEnabled";
+			this.CheckboxDoubleTapEnabled.Size = new System.Drawing.Size(118, 17);
+			this.CheckboxDoubleTapEnabled.TabIndex = 10;
+			this.CheckboxDoubleTapEnabled.Text = "Enable Double Tap";
+			this.CheckboxDoubleTapEnabled.UseVisualStyleBackColor = true;
+			// 
+			// CheckboxShortcutEnabled
+			// 
+			this.CheckboxShortcutEnabled.AutoSize = true;
+			this.CheckboxShortcutEnabled.Location = new System.Drawing.Point(625, 102);
+			this.CheckboxShortcutEnabled.Name = "CheckboxShortcutEnabled";
+			this.CheckboxShortcutEnabled.Size = new System.Drawing.Size(102, 17);
+			this.CheckboxShortcutEnabled.TabIndex = 11;
+			this.CheckboxShortcutEnabled.Text = "Enable Shortcut";
+			this.CheckboxShortcutEnabled.UseVisualStyleBackColor = true;
+			// 
 			// LogicraftForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(778, 635);
+			this.Controls.Add(this.CheckboxShortcutEnabled);
+			this.Controls.Add(this.CheckboxDoubleTapEnabled);
 			this.Controls.Add(this.CheckboxKeyboardRatchetEnabled);
 			this.Controls.Add(this.label2);
 			this.Controls.Add(this.TextboxWheelFactor);
@@ -216,5 +240,7 @@
 		private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem showToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem hideToolStripMenuItem;
+		private System.Windows.Forms.CheckBox CheckboxDoubleTapEnabled;
+		private System.Windows.Forms.CheckBox CheckboxShortcutEnabled;
 	}
 }

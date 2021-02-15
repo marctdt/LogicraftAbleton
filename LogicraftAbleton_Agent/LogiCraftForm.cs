@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using WindowsInput;
 using WindowsInput.Native;
 using Commons.Music.Midi;
+using Gma.System.MouseKeyHook;
 using LogicraftAbleton.Helpers;
 using LogicraftAbleton.Model;
 using Newtonsoft.Json;
@@ -76,6 +77,9 @@ namespace LogicraftAbleton
 
 		private readonly int _turnSpeedThresholdRatchet =
 			Convert.ToInt32(ConfigurationManager.AppSettings["DefaultTurnSpeedThresholdRatchet"]);
+
+		private bool _isDoubleTapEnable = Convert.ToBoolean(ConfigurationManager.AppSettings["DefaultDoubleTapEnable"]);
+		private bool _isShortcutEnable = Convert.ToBoolean(ConfigurationManager.AppSettings["DefaultShortcutEnable"]);
 
 		private Timer _turnSpeedTimer;
 		private double _wheelSimFactor = Convert.ToDouble(ConfigurationManager.AppSettings["DefaultWheelSimFactor"]);
@@ -171,12 +175,16 @@ namespace LogicraftAbleton
 						{
 							if (crownRootObject.touch_state == CrownRootObject.TouchStateEnum.Touch)
 							{
-								if (_countTapForDoubleTap == 0)
-									InitDetectDoubleTap();
-								if (_timerDoubleTap != null && _timerDoubleTap.Enabled)
-									_countTapForDoubleTap++;
-								if (_countTapForDoubleTap == 2)
-									OnOnDoubleTap();
+								if (_isDoubleTapEnable)
+								{
+									if (_countTapForDoubleTap == 0)
+										InitDetectDoubleTap();
+									if (_timerDoubleTap != null && _timerDoubleTap.Enabled)
+										_countTapForDoubleTap++;
+									if (_countTapForDoubleTap == 2)
+										OnOnDoubleTap();
+								}
+
 								_timer = new Timer(_holdModeTimerDuration) { Enabled = true };
 								_timer.Start();
 								//_timer.Elapsed += (sender, args) => ToolChange(_currentTool == "TabControl" ? "ProgressBar" : "TabControl");
@@ -562,6 +570,8 @@ namespace LogicraftAbleton
 				InitUi();
 				var closeListener = new ClosingWsListener();
 				closeListener.OnCloseRequest += exitToolStripMenuItem_Click;
+				InitKeyboardInput();
+
 			}
 			catch (Exception ex)
 			{
@@ -570,6 +580,40 @@ namespace LogicraftAbleton
 				MessageBox.Show(str);
 				exitToolStripMenuItem_Click(this, null);
 			}
+		}
+
+		private IKeyboardMouseEvents _keyHook;
+
+		private void InitKeyboardInput()
+		{
+			if (!_isShortcutEnable)
+			{
+				DeactivateKeyboardInput();
+				return;
+			}
+
+			_keyHook = Hook.GlobalEvents();
+			_keyHook.KeyDown += (sender, args) =>
+			{
+				switch (args.KeyCode)
+				{
+					case Keys.OemQuotes when args.Modifiers == (Keys.Alt | Keys.Shift):
+						ToolChange(CrownModEnum.TabControl);
+						break;
+					case Keys.Oemcomma when args.Modifiers == (Keys.Alt | Keys.Shift):
+						ToolChange(CrownModEnum.NumericUpDown);
+						break;
+					case Keys.OemPeriod when args.Modifiers == (Keys.Alt | Keys.Shift):
+						ToolChange(CrownModEnum.TextBox);
+						break;
+				}
+			};
+		}
+
+		private void DeactivateKeyboardInput()
+		{
+			_keyHook?.Dispose();
+			_keyHook = null;
 		}
 
 		private CrownModEnum GetNextTool()
@@ -589,6 +633,8 @@ namespace LogicraftAbleton
 			CheckboxHoldMode.Checked = _isHoldModeEnabled;
 			CheckboxLogging.Checked = _isLogEnabled;
 			CheckboxKeyboardRatchetEnabled.Checked = _isKeyboardModeRatchetEnabled;
+			CheckboxDoubleTapEnabled.Checked = _isDoubleTapEnable;
+			CheckboxShortcutEnabled.Checked = _isShortcutEnable;
 			TextboxTimerDuration.Text = _holdModeTimerDuration.ToString();
 			TextboxWheelFactor.Text = _wheelSimFactor.ToString(CultureInfo.InvariantCulture);
 			MinimizeWindow();
@@ -676,6 +722,7 @@ namespace LogicraftAbleton
 
 		private void InitDetectDoubleTap()
 		{
+			if (!_isDoubleTapEnable) return;
 			_timerDoubleTap = new Timer(_doubleTapTimerDuration) { Enabled = true };
 			_timerDoubleTap.Elapsed += (sender, args) =>
 			{
@@ -690,6 +737,7 @@ namespace LogicraftAbleton
 
 		protected virtual void OnOnDoubleTap()
 		{
+			if (!_isDoubleTapEnable) return;
 			WritelineInLogTextbox("double tap detected");
 			_countTapForDoubleTap = 0;
 			_timerDoubleTap?.Stop();
