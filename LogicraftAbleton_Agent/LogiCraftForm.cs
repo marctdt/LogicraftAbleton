@@ -111,10 +111,14 @@ namespace LogicraftAbleton
 						_timer?.Dispose();
 						if (crownRootObject.message_type == "crown_touch_event")
 						{
-							if (crownRootObject.touch_state == 1)
+							if (crownRootObject.touch_state == CrownRootObject.TouchStateEnum.Touch)
 							{
 								if (_countTapForDoubleTap == 0)
 									InitDetectDoubleTap();
+								if (_timerDoubleTap != null && _timerDoubleTap.Enabled == true)
+									_countTapForDoubleTap++;
+								if (_countTapForDoubleTap == 2)
+									OnOnDoubleTap();
 								_timer = new System.Timers.Timer(_holdModeTimerDuration) { Enabled = true };
 								_timer.Start();
 								//_timer.Elapsed += (sender, args) => ToolChange(_currentTool == "TabControl" ? "ProgressBar" : "TabControl");
@@ -130,11 +134,8 @@ namespace LogicraftAbleton
 									_timer.Dispose();
 								};
 							}
-							else
+							else if (crownRootObject.touch_state == CrownRootObject.TouchStateEnum.Release)
 							{
-								if (_countTapForDoubleTap == 2)
-									OnOnDoubleTap();
-								_countTapForDoubleTap++;
 								if (_currentTool == CrownModEnum.ProgressBar)
 									if (!_isHoldModeEnabled)
 										ToolChange(CrownModEnum.TabControl);
@@ -488,7 +489,7 @@ namespace LogicraftAbleton
 				OnDoubleTap += (sender, args) => ToolChange(GetNextTool());
 				OnFastSpeedThresholdReached += (sender, args) => ToolChange((CrownModEnum.ProgressBar));
 				OnSlowSpeedThresholdReached += (sender, args) => ToolChange((CrownModEnum.TabControl));
-				InitFields();
+				InitUi();
 			}
 			catch (Exception ex)
 			{
@@ -512,19 +513,21 @@ namespace LogicraftAbleton
 
 		}
 
-		private void InitFields()
+		private void InitUi()
 		{
 			CheckboxHoldMode.Checked = _isHoldModeEnabled;
 			CheckboxLogging.Checked = _isLogEnabled;
 			CheckboxKeyboardRatchetEnabled.Checked = _isKeyboardModeRatchetEnabled;
 			TextboxTimerDuration.Text = _holdModeTimerDuration.ToString();
 			TextboxWheelFactor.Text = _wheelSimFactor.ToString(CultureInfo.InvariantCulture);
+			WindowState = FormWindowState.Minimized;
+			Hide();
+			LogicraftForm_Resize();
 		}
 
 		public LogicraftForm()
 		{
 			InitializeComponent();
-			WindowState = FormWindowState.Minimized;
 
 			Init();
 
@@ -604,6 +607,7 @@ namespace LogicraftAbleton
 			_timerDoubleTap = new Timer(_doubleTapTimerDuration) { Enabled = true };
 			_timerDoubleTap.Elapsed += (sender, args) =>
 			 {
+				 WritelineInLogTextbox("End of Double tap timer");
 				 _countTapForDoubleTap = 0;
 				 _timerDoubleTap.Stop();
 				 _timerDoubleTap.Close();
@@ -649,6 +653,23 @@ namespace LogicraftAbleton
 		private void CheckboxKeyboardRatchetEnabled_CheckedChanged(object sender, EventArgs e)
 		{
 			_isKeyboardModeRatchetEnabled = CheckboxKeyboardRatchetEnabled.Checked;
+		}
+
+		private void LogicraftForm_Resize(object sender, EventArgs e)
+		{
+
+			if (this.WindowState == FormWindowState.Minimized)
+			{
+				Hide();
+				LogicraftNotifyTray.Visible = true;
+			}
+		}
+
+		private void LogicraftNotifyTray_MouseDoubleClick(object sender, MouseEventArgs e)
+		{
+			Show();
+			this.WindowState = FormWindowState.Normal;
+			LogicraftNotifyTray.Visible = false;
 		}
 	}
 

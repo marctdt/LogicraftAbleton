@@ -28,6 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LogicraftForm));
 			this.logBox = new System.Windows.Forms.RichTextBox();
 			this.CheckboxLogging = new System.Windows.Forms.CheckBox();
@@ -38,6 +39,7 @@
 			this.TextboxWheelFactor = new System.Windows.Forms.TextBox();
 			this.label2 = new System.Windows.Forms.Label();
 			this.CheckboxKeyboardRatchetEnabled = new System.Windows.Forms.CheckBox();
+			this.LogicraftNotifyTray = new System.Windows.Forms.NotifyIcon(this.components);
 			this.SuspendLayout();
 			// 
 			// logBox
@@ -127,6 +129,13 @@
 			this.CheckboxKeyboardRatchetEnabled.UseVisualStyleBackColor = true;
 			this.CheckboxKeyboardRatchetEnabled.CheckedChanged += new System.EventHandler(this.CheckboxKeyboardRatchetEnabled_CheckedChanged);
 			// 
+			// LogicraftNotifyTray
+			// 
+			this.LogicraftNotifyTray.Icon = ((System.Drawing.Icon)(resources.GetObject("LogicraftNotifyTray.Icon")));
+			this.LogicraftNotifyTray.Text = "Logicraft for Ableton";
+			this.LogicraftNotifyTray.Visible = true;
+			this.LogicraftNotifyTray.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.LogicraftNotifyTray_MouseDoubleClick);
+			// 
 			// LogicraftForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -145,6 +154,7 @@
 			this.Margin = new System.Windows.Forms.Padding(2);
 			this.Name = "LogicraftForm";
 			this.Text = "Logicraft for Ableton";
+			this.Resize += new System.EventHandler(this.LogicraftForm_Resize);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -161,5 +171,6 @@
 		private System.Windows.Forms.TextBox TextboxWheelFactor;
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.CheckBox CheckboxKeyboardRatchetEnabled;
+		private System.Windows.Forms.NotifyIcon LogicraftNotifyTray;
 	}
 }
