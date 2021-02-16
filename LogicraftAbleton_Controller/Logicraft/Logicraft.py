@@ -64,7 +64,7 @@ class Logicraft(ControlSurface):
 
     def set_up_controls(self):
         is_momentary = True
-        self.crown = ButtonElement(is_momentary, MIDI_CC_TYPE, 0, 0)
+        self.crown = ButtonElement(is_momentary, MIDI_CC_TYPE, 15, 0)
         self._do_crown.subject = self.crown
         Log.log("crown mapping setup")
         

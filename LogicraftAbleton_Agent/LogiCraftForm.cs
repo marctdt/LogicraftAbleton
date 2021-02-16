@@ -91,6 +91,7 @@ namespace LogicraftAbleton
 			}
 		}
 
+		public string MidiPortName { get; set; } = ConfigurationManager.AppSettings["DefaultMidiPortName"];
 		private Timer _turnSpeedTimer;
 		private double _wheelSimFactor = Convert.ToDouble(ConfigurationManager.AppSettings["DefaultWheelSimFactor"]);
 
@@ -232,6 +233,10 @@ namespace LogicraftAbleton
 
 								Enum.TryParse(crownRootObject.task_options.current_tool, true,
 									out CrownModEnum currentTool);
+								byte midiEventType;
+								byte midiChannel;
+								byte midiParameter;
+								byte midiValue;
 								switch (currentTool)
 								{
 									case CrownModEnum.TabControl:
@@ -241,13 +246,14 @@ namespace LogicraftAbleton
 											direction = crownRootObject.ratchet_delta > 0 ? 1 : 0
 										});
 										//WritelineInLogTextbox($"Send to ableton: {command}");
-										WritelineInLogTextbox("send midi to BMT 1 with Ratchet");
-										_bmt1Output.Send(
-											new byte[]
-											{
-												MidiEvent.CC, 0x00,
-												CalcMidiOffsetFromCenter(crownRootObject.ratchet_delta)
-											}, 0, 2, 0);
+										WritelineInLogTextbox($"send midi to {MidiPortName} with Ratchet");
+										midiEventType = MidiEvent.CC;
+										midiChannel = 15;
+										midiParameter = 0;
+										midiValue = CalcMidiOffsetFromCenter(crownRootObject.ratchet_delta);
+
+										SendMidiMessage(midiEventType, midiChannel, midiParameter, midiValue);
+
 										if (!_isHoldModeEnabled)
 										{
 											if (!IsDetectTimerEnabled)
@@ -261,16 +267,18 @@ namespace LogicraftAbleton
 										break;
 
 									case CrownModEnum.ProgressBar:
-										WritelineInLogTextbox("send midi to BMT 1 without Ratchet");
+										WritelineInLogTextbox("send midi to {MidiPortName} without Ratchet");
 										var deltaRounded = 0;
 										deltaRounded = crownRootObject.delta > 0
 											? Convert.ToInt32(
 												Math.Ceiling(crownRootObject.delta / _factorBrowseNoRatchet))
 											: -Convert.ToInt32(Math.Ceiling(Math.Abs(crownRootObject.delta) /
 																			_factorBrowseNoRatchet));
-										_bmt1Output.Send(
-											new byte[] { MidiEvent.CC, 0x00, CalcMidiOffsetFromCenter(deltaRounded) }, 0,
-											2, 0);
+										midiEventType = MidiEvent.CC;
+										midiChannel = 15;
+										midiParameter = 0;
+										midiValue = CalcMidiOffsetFromCenter(deltaRounded);
+										SendMidiMessage(midiEventType, midiChannel, midiParameter, midiValue);
 
 										if (!_isHoldModeEnabled)
 										{
@@ -337,6 +345,24 @@ namespace LogicraftAbleton
 					}
 
 					break;
+			}
+		}
+
+		private async void SendMidiMessage(byte midiEventType, byte midiChannel, byte midiParameter, byte midiValue)
+		{
+			try
+			{
+
+				_bmt1Output.Send(
+					new byte[]
+					{
+						(byte) (midiEventType|midiChannel), midiParameter, midiValue
+					}, 0, 3, 0);
+			}
+			catch (Exception e)
+			{
+				WritelineInLogTextbox($"Cannot send message to {MidiPortName}. try to reconnect...");
+				await InitMidiPortConnectionAsync();
 			}
 		}
 
@@ -468,6 +494,11 @@ namespace LogicraftAbleton
 		}
 
 
+		public async Task InitMidiPortConnectionAsync()
+		{
+			await ConnectToMidiPort(MidiPortName);
+		}
+
 		public async Task ConnectToAbletonAsync()
 		{
 			//_abletonClient = new WatsonWebsocket.WatsonWsClient("localhost", 9009, false);
@@ -491,13 +522,21 @@ namespace LogicraftAbleton
 			//	_abletonServer.Start();
 
 
+			
+		}
+
+
+		public async Task ConnectToMidiPort(string midiPortName)
+		{
 			try
 			{
 				var access = MidiAccessManager.Default;
-				 _bmt1Output = await access.OpenOutputAsync(access.Outputs.First(x => x.Name == "BMT 1").Id);
-			
-				//_bmt1Input = await access.OpenInputAsync(access.Inputs.First(x => x.Name == "BMT 1").Id);
-				WritelineInLogTextbox("Connected to BMT 1");
+				_bmt1Output = await access.OpenOutputAsync(access.Outputs.First(x => x.Name == midiPortName).Id);
+				if(_bmt1Output.Connection == MidiPortConnectionState.Open)
+					WritelineInLogTextbox($"Connected to {midiPortName}");
+				else
+					throw new Exception("Cannot connect to the midi port");
+				//_bmt1Input = await access.OpenInputAsync(access.Inputs.First(x => x.Name == "{MidiPortName}BMT 1").Id);
 			}
 			catch (Exception)
 			{
@@ -573,8 +612,8 @@ namespace LogicraftAbleton
 				// setup timers 
 				SetupUIRefreshTimer();
 
-				// setup connnection 
-				await ConnectToAbletonAsync();
+				//await ConnectToAbletonAsync();
+				await InitMidiPortConnectionAsync();
 				connectWithManager();
 
 
