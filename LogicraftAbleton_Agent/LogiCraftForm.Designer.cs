@@ -184,6 +184,7 @@
 			this.CheckboxDoubleTapEnabled.TabIndex = 10;
 			this.CheckboxDoubleTapEnabled.Text = "Enable Double Tap";
 			this.CheckboxDoubleTapEnabled.UseVisualStyleBackColor = true;
+			this.CheckboxDoubleTapEnabled.CheckedChanged += new System.EventHandler(this.CheckboxDoubleTapEnabled_CheckedChanged);
 			// 
 			// CheckboxShortcutEnabled
 			// 
@@ -194,6 +195,7 @@
 			this.CheckboxShortcutEnabled.TabIndex = 11;
 			this.CheckboxShortcutEnabled.Text = "Enable Shortcut";
 			this.CheckboxShortcutEnabled.UseVisualStyleBackColor = true;
+			this.CheckboxShortcutEnabled.CheckedChanged += new System.EventHandler(this.CheckboxShortcutEnabled_CheckedChanged);
 			// 
 			// LogicraftForm
 			// 

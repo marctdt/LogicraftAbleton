@@ -79,7 +79,17 @@ namespace LogicraftAbleton
 			Convert.ToInt32(ConfigurationManager.AppSettings["DefaultTurnSpeedThresholdRatchet"]);
 
 		private bool _isDoubleTapEnable = Convert.ToBoolean(ConfigurationManager.AppSettings["DefaultDoubleTapEnable"]);
-		private bool _isShortcutEnable = Convert.ToBoolean(ConfigurationManager.AppSettings["DefaultShortcutEnable"]);
+
+		private bool IsShortcutEnable
+		{
+			get => _isShortcutEnable;
+			set
+			{
+				_isShortcutEnable = value;
+				if(_isShortcutEnable)InitKeyboardInput();
+				else DeactivateKeyboardInput();
+			}
+		}
 
 		private Timer _turnSpeedTimer;
 		private double _wheelSimFactor = Convert.ToDouble(ConfigurationManager.AppSettings["DefaultWheelSimFactor"]);
@@ -134,7 +144,7 @@ namespace LogicraftAbleton
 			{
 				var err = ex.Message;
 				WritelineInLogTextbox(ex.StackTrace);
-				MessageBox.Show(err);
+				MessageBox.Show($@"Tool change error:{ex.Message} : {ex.StackTrace}");
 			}
 		}
 
@@ -322,7 +332,8 @@ namespace LogicraftAbleton
 					{
 						var str = ex.Message;
 						WritelineInLogTextbox(ex.StackTrace);
-						MessageBox.Show(str);
+					//	MessageBox.Show(str); 
+						MessageBox.Show($@"Tool change error:{ex.Message} : {ex.StackTrace}");
 					}
 
 					break;
@@ -483,14 +494,16 @@ namespace LogicraftAbleton
 			try
 			{
 				var access = MidiAccessManager.Default;
-				_bmt1Output = await access.OpenOutputAsync(access.Outputs.First(x => x.Name == "BMT 1").Id);
+				 _bmt1Output = await access.OpenOutputAsync(access.Outputs.First(x => x.Name == "BMT 1").Id);
+			
 				//_bmt1Input = await access.OpenInputAsync(access.Inputs.First(x => x.Name == "BMT 1").Id);
 				WritelineInLogTextbox("Connected to BMT 1");
 			}
-			catch (Exception e)
+			catch (Exception)
 			{
-				WritelineInLogTextbox(e.StackTrace);
-				MessageBox.Show("Cannot connect to midi device");
+				//WritelineInLogTextbox(e.StackTrace);
+				//MessageBox.Show("Cannot connect to midi device");
+				throw new Exception("Cannot connect to midi");
 			}
 		}
 
@@ -546,9 +559,10 @@ namespace LogicraftAbleton
 			}
 			catch (Exception ex)
 			{
-				var str = ex.Message;
-				WritelineInLogTextbox(ex.StackTrace);
-				MessageBox.Show("Ableton is not started yet");
+				//var str = ex.Message;
+				//WritelineInLogTextbox(ex.StackTrace);
+				//MessageBox.Show("Ableton is not started yet");
+				throw new Exception("Ableton is not started yet");
 			}
 		}
 
@@ -560,8 +574,8 @@ namespace LogicraftAbleton
 				SetupUIRefreshTimer();
 
 				// setup connnection 
-				connectWithManager();
 				await ConnectToAbletonAsync();
+				connectWithManager();
 
 
 				OnDoubleTap += (sender, args) => ToolChange(GetNextTool());
@@ -575,22 +589,22 @@ namespace LogicraftAbleton
 			}
 			catch (Exception ex)
 			{
-				var str = ex.Message;
-				WritelineInLogTextbox(ex.StackTrace);
-				MessageBox.Show(str);
+				var str = ex.StackTrace;
+			//	WritelineInLogTextbox(ex.StackTrace);
+				MessageBox.Show($"Error: {ex.Message} : {str}");
 				exitToolStripMenuItem_Click(this, null);
+				throw;
 			}
 		}
 
 		private IKeyboardMouseEvents _keyHook;
+		private bool _isShortcutEnable = Convert.ToBoolean(ConfigurationManager.AppSettings["DefaultShortcutEnable"]);
 
 		private void InitKeyboardInput()
 		{
-			if (!_isShortcutEnable)
-			{
-				DeactivateKeyboardInput();
+			DeactivateKeyboardInput();
+			if (!IsShortcutEnable)
 				return;
-			}
 
 			_keyHook = Hook.GlobalEvents();
 			_keyHook.KeyDown += (sender, args) =>
@@ -637,7 +651,7 @@ namespace LogicraftAbleton
 			CheckboxLogging.Checked = _isLogEnabled;
 			CheckboxKeyboardRatchetEnabled.Checked = _isKeyboardModeRatchetEnabled;
 			CheckboxDoubleTapEnabled.Checked = _isDoubleTapEnable;
-			CheckboxShortcutEnabled.Checked = _isShortcutEnable;
+			CheckboxShortcutEnabled.Checked = IsShortcutEnable;
 			TextboxTimerDuration.Text = _holdModeTimerDuration.ToString();
 			TextboxWheelFactor.Text = _wheelSimFactor.ToString(CultureInfo.InvariantCulture);
 			MinimizeWindow();
@@ -816,10 +830,7 @@ namespace LogicraftAbleton
 				MinimizeWindow();
 		}
 
-		private void hideToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-			MinimizeWindow();
-		}
+		private void hideToolStripMenuItem_Click(object sender, EventArgs e) => MinimizeWindow();
 
 		private void LogicraftNotifyTray_MouseClick(object sender, MouseEventArgs e)
 		{
@@ -827,9 +838,10 @@ namespace LogicraftAbleton
 			RestoreWindow();
 		}
 
-		private void showToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-			RestoreWindow();
-		}
+		private void showToolStripMenuItem_Click(object sender, EventArgs e) => RestoreWindow();
+
+		private void CheckboxDoubleTapEnabled_CheckedChanged(object sender, EventArgs e) => _isDoubleTapEnable = CheckboxDoubleTapEnabled.Checked;
+
+		private void CheckboxShortcutEnabled_CheckedChanged(object sender, EventArgs e) => IsShortcutEnable = CheckboxShortcutEnabled.Checked;
 	}
 }
