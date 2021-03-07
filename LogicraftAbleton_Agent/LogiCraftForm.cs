@@ -570,12 +570,12 @@ namespace LogicraftAbleton
 				WritelineInLogTextbox("Connection " + _client);
 				_client.Connect();
 
-				var abletonProcess = Process.GetProcessesByName("Ableton Live 11 Beta")[0];
+				var abletonProcess = Process.GetProcessesByName("Ableton Live 11 Suite")[0];
 
 				var registerRootObject = new CrownRegisterRootObject();
 				registerRootObject.message_type = "register";
 				registerRootObject.plugin_guid = "41704de9-fa75-4b77-ba44-665bc9a2f8aa";
-				registerRootObject.execName = "Ableton Live 11 Beta.exe";
+				registerRootObject.execName = "Ableton Live 11 Suite.exe";
 				registerRootObject.PID = Convert.ToInt32(abletonProcess.Id);
 				var s = JsonConvert.SerializeObject(registerRootObject);
 

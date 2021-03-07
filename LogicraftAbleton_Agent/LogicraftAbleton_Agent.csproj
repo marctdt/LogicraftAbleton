@@ -67,6 +67,24 @@
     <Reference Include="alsa-sharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\managed-midi.1.9.14\lib\net45\alsa-sharp.dll</HintPath>
     </Reference>
+    <Reference Include="CannedBytes, Version=2.0.1.0, Culture=neutral, PublicKeyToken=f06e79418a3c8ee5, processorArchitecture=MSIL">
+      <HintPath>..\packages\CannedBytes.2.0.1\lib\net40\CannedBytes.dll</HintPath>
+    </Reference>
+    <Reference Include="CannedBytes.Media.IO, Version=2.0.1.0, Culture=neutral, PublicKeyToken=f06e79418a3c8ee5, processorArchitecture=MSIL">
+      <HintPath>..\packages\CannedBytes.Media.IO.2.0.1\lib\net40\CannedBytes.Media.IO.dll</HintPath>
+    </Reference>
+    <Reference Include="CannedBytes.Midi, Version=2.0.2.0, Culture=neutral, PublicKeyToken=f06e79418a3c8ee5, processorArchitecture=MSIL">
+      <HintPath>..\packages\CannedBytes.Midi.2.0.2\lib\net40\CannedBytes.Midi.dll</HintPath>
+    </Reference>
+    <Reference Include="CannedBytes.Midi.IO, Version=2.0.2.0, Culture=neutral, PublicKeyToken=f06e79418a3c8ee5, processorArchitecture=MSIL">
+      <HintPath>..\packages\CannedBytes.Midi.IO.2.0.2\lib\net40\CannedBytes.Midi.IO.dll</HintPath>
+    </Reference>
+    <Reference Include="CannedBytes.Midi.Message, Version=2.0.2.0, Culture=neutral, PublicKeyToken=f06e79418a3c8ee5, processorArchitecture=MSIL">
+      <HintPath>..\packages\CannedBytes.Midi.Message.2.0.2\lib\net40\CannedBytes.Midi.Message.dll</HintPath>
+    </Reference>
+    <Reference Include="CannedBytes.Midi.Xml, Version=2.0.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\CannedBytes.Midi.Xml.2.0.2\lib\net40\CannedBytes.Midi.Xml.dll</HintPath>
+    </Reference>
     <Reference Include="Commons.Music.Midi, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\managed-midi.1.9.14\lib\net45\Commons.Music.Midi.dll</HintPath>
     </Reference>
@@ -88,6 +106,7 @@
     <Reference Include="websocket-sharp, Version=1.0.1.0, Culture=neutral, PublicKeyToken=5660b08a1845a91e, processorArchitecture=MSIL">
       <HintPath>..\packages\WebSocketSharp-netstandard.1.0.1\lib\net45\websocket-sharp.dll</HintPath>
     </Reference>
+    <Reference Include="WindowsBase" />
     <Reference Include="WindowsInput, Version=1.0.4.0, Culture=neutral, PublicKeyToken=9b287f7dc5073cad, processorArchitecture=MSIL">
       <HintPath>..\packages\InputSimulator.1.0.4.0\lib\net20\WindowsInput.dll</HintPath>
     </Reference>
@@ -104,6 +123,7 @@
     <Compile Include="LogiCraftForm.Designer.cs">
       <DependentUpon>LogiCraftForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Model\teVirtualMIDI.cs" />
     <Compile Include="Model\TextBoxOptions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

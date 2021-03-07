@@ -1,10 +1,10 @@
 {
     "GUID": "41704de9-fa75-4b77-ba44-665bc9a2f8aa",
     "info": {
-        "name": "Ableton 11 Beta",
+        "name": "Ableton 11 Suite",
 		 "publisher": "MarcTDT",
         "version": "1.0",
-        "win_name": "Ableton Live 11 Beta.exe",
+        "win_name": "Ableton Live 11 Suite.exe",
 		
         "mac_bundle": "",
         "mac_path": "",
