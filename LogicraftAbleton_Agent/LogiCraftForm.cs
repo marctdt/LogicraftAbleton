@@ -355,16 +355,22 @@ namespace LogicraftAbleton
 		{
 			try
 			{
-				_bmt1Output.Send(
-					new byte[]
+				var command = new byte[]
 					{
 						(byte) (midiEventType|midiChannel), midiParameter, midiValue
-					}, 0, 3, 0);
+					};
+
+				_teVirtualMidi.sendCommand(command);
+				//_bmt1Output.Send(
+				//	new byte[]
+				//	{
+				//		(byte) (midiEventType|midiChannel), midiParameter, midiValue
+				//	}, 0, 3, 0);
 			}
 			catch (Exception e)
 			{
 				WritelineInLogTextbox($"Cannot send message to {MidiPortName}. try to reconnect...");
-				await InitMidiPortConnectionAsync();
+				InitMidiPortConnectionAsync();
 			}
 		}
 
@@ -490,10 +496,10 @@ namespace LogicraftAbleton
 			WritelineInLogTextbox(str);
 		}
 
-		public async Task InitMidiPortConnectionAsync()
+		public void InitMidiPortConnectionAsync()
 		{
 			CreateMidiPort(MidiPortName);
-			await ConnectToMidiPort(MidiPortName);
+			// await ConnectToMidiPort(MidiPortName);
 		}
 
 		public async Task ConnectToAbletonAsync()
@@ -610,7 +616,7 @@ namespace LogicraftAbleton
 				SetupUIRefreshTimer();
 
 				//await ConnectToAbletonAsync();
-				await InitMidiPortConnectionAsync();
+				InitMidiPortConnectionAsync();
 				connectWithManager();
 
 				OnDoubleTap += (sender, args) => ToolChange(GetNextTool());
