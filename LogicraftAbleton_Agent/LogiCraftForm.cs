@@ -1,4 +1,9 @@
-﻿using System;
+﻿using Commons.Music.Midi;
+using Gma.System.MouseKeyHook;
+using LogicraftAbleton.Helpers;
+using LogicraftAbleton.Model;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
@@ -8,14 +13,9 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
+using WebSocketSharp;
 using WindowsInput;
 using WindowsInput.Native;
-using Commons.Music.Midi;
-using Gma.System.MouseKeyHook;
-using LogicraftAbleton.Helpers;
-using LogicraftAbleton.Model;
-using Newtonsoft.Json;
-using WebSocketSharp;
 using Timer = System.Timers.Timer;
 
 namespace LogicraftAbleton
@@ -86,7 +86,7 @@ namespace LogicraftAbleton
 			set
 			{
 				_isShortcutEnable = value;
-				if(_isShortcutEnable)InitKeyboardInput();
+				if (_isShortcutEnable) InitKeyboardInput();
 				else DeactivateKeyboardInput();
 			}
 		}
@@ -119,11 +119,12 @@ namespace LogicraftAbleton
 
 		[DllImport("Kernel32.dll", EntryPoint = "WTSGetActiveConsoleSessionId")]
 		public static extern int WTSGetActiveConsoleSessionId();
+
 		//private List<CrownRootObject> _crownObjectList = new List<CrownRootObject>();
 
 		public event EventHandler OnFastSpeedThresholdReached;
-		public event EventHandler OnSlowSpeedThresholdReached;
 
+		public event EventHandler OnSlowSpeedThresholdReached;
 
 		public void ToolChange(CrownModEnum contextName)
 		{
@@ -149,7 +150,6 @@ namespace LogicraftAbleton
 			}
 		}
 
-
 		[DllImport("user32.dll")]
 		public static extern void mouse_event(int dwFlags, int dx, int dy, int dwData, int dwExtraInfo);
 
@@ -171,10 +171,12 @@ namespace LogicraftAbleton
 			{
 				case "deactivate_plugin":
 					return;
+
 				case "register_ack":
 					_sessionId = crownRootObject.session_id;
 					ToolChange(CrownModEnum.TabControl);
 					return;
+
 				default:
 					WritelineInLogTextbox($"message_type is {crownRootObject.message_type}");
 					try
@@ -229,7 +231,6 @@ namespace LogicraftAbleton
 								// received a crown turn event from Craft crown
 								Trace.Write("++ crown ratchet delta :" + crownRootObject.ratchet_delta +
 											" slot delta = " + crownRootObject.delta + "\n");
-
 
 								Enum.TryParse(crownRootObject.task_options.current_tool, true,
 									out CrownModEnum currentTool);
@@ -291,6 +292,7 @@ namespace LogicraftAbleton
 										;
 
 										break;
+
 									case CrownModEnum.NumericUpDown:
 										//var factorWheel = 0;
 										//factorWheel = crownRootObject.delta > 0
@@ -306,6 +308,7 @@ namespace LogicraftAbleton
 										//WritelineInLogTextbox($"Mouse wheel {factorWheel} -- {deltaWheel}");
 										Scroll(deltaWheel);
 										break;
+
 									case CrownModEnum.TextBox:
 										Enum.TryParse(crownRootObject.task_options.current_tool_option, true,
 											out TextBoxOptions currentTextBoxToolOption);
@@ -340,7 +343,7 @@ namespace LogicraftAbleton
 					{
 						var str = ex.Message;
 						WritelineInLogTextbox(ex.StackTrace);
-					//	MessageBox.Show(str); 
+						//	MessageBox.Show(str);
 						MessageBox.Show($@"Tool change error:{ex.Message} : {ex.StackTrace}");
 					}
 
@@ -352,7 +355,6 @@ namespace LogicraftAbleton
 		{
 			try
 			{
-
 				_bmt1Output.Send(
 					new byte[]
 					{
@@ -375,7 +377,7 @@ namespace LogicraftAbleton
 			//timer.Elapsed += new System.Timers.ElapsedEventHandler(timer_Elapsed);
 			//timer.Start();
 
-			// reconnection watch dog 
+			// reconnection watch dog
 			var reconnection_timer = new Timer(30000);
 			reconnection_timer.Enabled = true;
 			reconnection_timer.Elapsed += connection_watchdog_timer;
@@ -388,12 +390,10 @@ namespace LogicraftAbleton
 			connectWithManager();
 		}
 
-
 		//public void timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
 		//{
 		//	try
 		//	{
-
 		//		int totalDeltaValue = 0;
 		//		int totalRatchetDeltaValue = 0;
 		//		if (_crownObjectList == null || _crownObjectList.Count == 0)
@@ -453,11 +453,10 @@ namespace LogicraftAbleton
 		//		_crownObjectList.Add(crownRootObject);
 		//		Trace.Write("**** UI crown ratchet delta :" + crownRootObject.ratchet_delta + " slot delta = " + crownRootObject.delta + "\n");
 
-
 		//	}
 		//	else if (crownRootObject.message_type == "register_ack")
 		//	{
-		//		// save the session id as this is used for any communication with Logi Options 
+		//		// save the session id as this is used for any communication with Logi Options
 		//		_sessionId = crownRootObject.session_id;
 		//		//toolChange("nothing");
 		//		_lastcontext = "";
@@ -469,7 +468,6 @@ namespace LogicraftAbleton
 		//		}
 		//		else
 		//		{
-
 		//			ToolChange("ProgressBar");
 		//		}
 
@@ -486,16 +484,15 @@ namespace LogicraftAbleton
 		{
 		}
 
-
 		public void displayError(string msg)
 		{
 			var str = msg;
 			WritelineInLogTextbox(str);
 		}
 
-
 		public async Task InitMidiPortConnectionAsync()
 		{
+			CreateMidiPort(MidiPortName);
 			await ConnectToMidiPort(MidiPortName);
 		}
 
@@ -516,15 +513,11 @@ namespace LogicraftAbleton
 			//	if(_abletonServer.ListClients().Count()>1)
 			//		_abletonServer.DisconnectClient(args.IpPort);
 			//};
-			//_abletonServer.ClientDisconnected += (sender, args) => 
+			//_abletonServer.ClientDisconnected += (sender, args) =>
 			//	WritelineInLogTextbox($"Client on {args.IpPort} is disconnected");
 
 			//	_abletonServer.Start();
-
-
-			
 		}
-
 
 		public async Task ConnectToMidiPort(string midiPortName)
 		{
@@ -532,7 +525,7 @@ namespace LogicraftAbleton
 			{
 				var access = MidiAccessManager.Default;
 				_bmt1Output = await access.OpenOutputAsync(access.Outputs.First(x => x.Name == midiPortName).Id);
-				if(_bmt1Output.Connection == MidiPortConnectionState.Open)
+				if (_bmt1Output.Connection == MidiPortConnectionState.Open)
 					WritelineInLogTextbox($"Connected to {midiPortName}");
 				else
 					throw new Exception("Cannot connect to the midi port");
@@ -544,6 +537,11 @@ namespace LogicraftAbleton
 				//MessageBox.Show("Cannot connect to midi device");
 				throw new Exception("Cannot connect to midi");
 			}
+		}
+
+		private void CreateMidiPort(string midiPortName)
+		{
+			_teVirtualMidi = new TobiasErichsen.teVirtualMIDI.TeVirtualMIDI(midiPortName);
 		}
 
 		public void connectWithManager()
@@ -579,7 +577,6 @@ namespace LogicraftAbleton
 				registerRootObject.PID = Convert.ToInt32(abletonProcess.Id);
 				var s = JsonConvert.SerializeObject(registerRootObject);
 
-
 				// only connect to active session process
 				registerRootObject.PID = Convert.ToInt32(abletonProcess.Id);
 				var activeConsoleSessionId = WTSGetActiveConsoleSessionId();
@@ -609,13 +606,12 @@ namespace LogicraftAbleton
 		{
 			try
 			{
-				// setup timers 
+				// setup timers
 				SetupUIRefreshTimer();
 
 				//await ConnectToAbletonAsync();
 				await InitMidiPortConnectionAsync();
 				connectWithManager();
-
 
 				OnDoubleTap += (sender, args) => ToolChange(GetNextTool());
 				OnFastSpeedThresholdReached += (sender, args) => ToolChange(CrownModEnum.ProgressBar);
@@ -624,12 +620,11 @@ namespace LogicraftAbleton
 				var closeListener = new ClosingWsListener();
 				closeListener.OnCloseRequest += exitToolStripMenuItem_Click;
 				InitKeyboardInput();
-
 			}
 			catch (Exception ex)
 			{
 				var str = ex.StackTrace;
-			//	WritelineInLogTextbox(ex.StackTrace);
+				//	WritelineInLogTextbox(ex.StackTrace);
 				MessageBox.Show($"Error: {ex.Message} : {str}");
 				exitToolStripMenuItem_Click(this, null);
 				throw;
@@ -638,6 +633,7 @@ namespace LogicraftAbleton
 
 		private IKeyboardMouseEvents _keyHook;
 		private bool _isShortcutEnable = Convert.ToBoolean(ConfigurationManager.AppSettings["DefaultShortcutEnable"]);
+		private TobiasErichsen.teVirtualMIDI.TeVirtualMIDI _teVirtualMidi;
 
 		private void InitKeyboardInput()
 		{
@@ -654,10 +650,12 @@ namespace LogicraftAbleton
 						args.SuppressKeyPress = true;
 						ToolChange(CrownModEnum.TabControl);
 						break;
+
 					case Keys.Oemcomma when args.Modifiers == (Keys.Alt | Keys.Shift):
 						args.SuppressKeyPress = true;
 						ToolChange(CrownModEnum.NumericUpDown);
 						break;
+
 					case Keys.OemPeriod when args.Modifiers == (Keys.Alt | Keys.Shift):
 						args.SuppressKeyPress = true;
 						ToolChange(CrownModEnum.TextBox);
@@ -834,6 +832,8 @@ namespace LogicraftAbleton
 		private void exitToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			LogicraftNotifyTray.Visible = false;
+			_teVirtualMidi.shutdown();
+
 			if (Application.MessageLoop)
 				// WinForms app
 				Application.Exit();
@@ -846,7 +846,6 @@ namespace LogicraftAbleton
 		{
 			MinimizeWindow();
 		}
-
 
 		private void MinimizeWindow()
 		{
